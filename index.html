@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Cartas — Juego de preguntas</title>
+<style>
+:root{
+  --bg:#14102a; --surface:#211a40; --raised:#2c2455;
+  --text:#ffffff; --sub:rgba(255,255,255,.65); --border:rgba(255,255,255,.16);
+  --l1a:#34d399; --l1b:#0ea5a4; --l2a:#fbbf24; --l2b:#f97316; --l3a:#fb7185; --l3b:#e11d48;
+  --p1:#5E9FE8; --p2:#DF84A8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:radial-gradient(1100px 700px at 50% -10%, #33215c 0%, #14102a 62%) fixed, var(--bg);
+  color:var(--text); min-height:100svh; -webkit-font-smoothing:antialiased;
+}
+#app{max-width:480px;margin:0 auto;min-height:100svh;display:flex;flex-direction:column;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.screen{flex:1;display:flex;flex-direction:column;justify-content:center;gap:24px;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* header */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0 12px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--raised);border:1px solid var(--border);color:var(--text);white-space:nowrap}
+.chip.turn1{background:rgba(94,159,232,.18);border-color:rgba(94,159,232,.5)}
+.chip.turn2{background:rgba(223,132,168,.18);border-color:rgba(223,132,168,.5)}
+.linkbtn{background:none;border:none;color:var(--sub);font-size:13px;font-weight:600;cursor:pointer;padding:8px 4px;min-height:44px}
+.linkbtn:hover{color:#fff}
+
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;border-radius:16px;
+  border:1px solid var(--border);background:var(--raised);color:#fff;font-size:16px;font-weight:700;cursor:pointer;
+  transition:transform .08s ease, filter .15s ease;font-family:inherit}
+.btn:active{transform:scale(.97)}
+.btn:hover{filter:brightness(1.1)}
+.btn:focus-visible{outline:3px solid #8ab6ef;outline-offset:2px}
+.btn-grad{border:none;color:#180f2e;background:linear-gradient(135deg,var(--ga,#34d399),var(--gb,#0ea5a4))}
+.btn-ghost{background:transparent}
+.btn-danger{background:rgba(233,115,102,.14);border-color:rgba(233,115,102,.5);color:#ffb1a8}
+.btn small{font-weight:600;opacity:.75}
+.stack{display:flex;flex-direction:column;gap:12px}
+
+/* setup */
+.hero{text-align:center;display:flex;flex-direction:column;gap:10px}
+.hero .logo{font-size:52px;line-height:1}
+.hero h1{font-size:30px;letter-spacing:-.02em}
+.hero p{color:var(--sub);font-size:15px;line-height:1.5;max-width:34ch;margin:0 auto}
+.field{display:flex;flex-direction:column;gap:6px;text-align:left}
+.field label{font-size:13px;font-weight:700;color:var(--sub)}
+.field input{min-height:52px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:16px;padding:0 16px;font-family:inherit}
+.field input:focus{outline:2px solid #8ab6ef;border-color:transparent}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:1px}
+
+/* handoff */
+.handoff{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.handoff .big{font-size:64px;animation:bounce 1.4s ease infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.handoff h2{font-size:26px;letter-spacing:-.02em}
+.handoff p{color:var(--sub);font-size:15px}
+.banner{font-size:14px;font-weight:700;padding:10px 16px;border-radius:12px;display:inline-flex;gap:8px;align-items:center}
+.banner.gain{background:rgba(114,188,143,.15);color:#8fe0b0;border:1px solid rgba(114,188,143,.4)}
+.banner.loss{background:rgba(233,115,102,.14);color:#ffb1a8;border:1px solid rgba(233,115,102,.4)}
+
+/* question card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:26px 22px;
+  box-shadow:0 1px 2px rgba(0,0,0,.25), 0 14px 40px rgba(0,0,0,.35);
+  animation:flip .5s cubic-bezier(.2,.7,.3,1);transform-style:preserve-3d;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:6px;background:linear-gradient(90deg,var(--ga),var(--gb))}
+@keyframes flip{from{transform:rotateY(80deg);opacity:0}to{transform:rotateY(0);opacity:1}}
+.card .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.lvlchip{font-size:12.5px;font-weight:800;padding:5px 11px;border-radius:999px;color:#180f2e;background:linear-gradient(135deg,var(--ga),var(--gb))}
+.catchip{font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--raised);border:1px solid var(--border);color:var(--sub)}
+.card .q{font-size:23px;font-weight:800;line-height:1.32;letter-spacing:-.015em;min-height:3.2em}
+.card .vals{display:flex;gap:16px;margin-top:20px;font-size:14px;font-weight:700}
+.card .vals .gain{color:#8fe0b0}.card .vals .loss{color:#ffb1a8}
+.card .subtxt{color:var(--sub);font-size:15px;line-height:1.5;margin-top:8px}
+.card .bigicon{font-size:44px;margin-bottom:10px}
+
+/* overlay & modal */
+.overlay{position:fixed;inset:0;background:rgba(10,7,24,.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;animation:fade .2s ease}
+.sheet{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:16px}
+.sheet h3{font-size:19px;text-align:center}
+.scorerow{display:flex;align-items:center;justify-content:space-between;background:var(--raised);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+.scorerow .nm{font-weight:800;font-size:16px}
+.scorerow .meta{font-size:12.5px;color:var(--sub);margin-top:2px}
+.scorerow .pts{font-size:26px;font-weight:900;font-variant-numeric:tabular-nums}
+.center{text-align:center;color:var(--sub);font-size:13.5px}
+
+/* end screen */
+.end{display:flex;flex-direction:column;gap:18px;text-align:center;padding:8px 0}
+.end .crown{font-size:56px}
+.end h2{font-size:28px;letter-spacing:-.02em}
+.end .sub{color:var(--sub);font-size:15px}
+.statcard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;text-align:left;display:flex;flex-direction:column;gap:10px}
+.statcard .head{display:flex;justify-content:space-between;align-items:baseline}
+.statcard .head .nm{font-weight:800;font-size:17px}
+.statcard .head .pts{font-size:24px;font-weight:900}
+.statcard .line{font-size:13.5px;color:var(--sub)}
+.lvlrow{display:flex;gap:8px;flex-wrap:wrap}
+.lvltag{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:var(--raised);color:var(--sub)}
+canvas.confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+// [nivel, categoría, pregunta] — snapshot de preguntas ACTIVAS del Banco de Preguntas
+const QUESTIONS=[
+[1,"Infancia y raíces","¿Cuál es el olor que más te devuelve a tu infancia?"],
+[1,"Infancia y raíces","¿Qué programa o caricatura veías obsesivamente de niño?"],
+[1,"Infancia y raíces","¿Cuál era tu escondite favorito cuando eras chiquito?"],
+[1,"Infancia y raíces","¿Qué comida hacía alguien de tu familia que nadie más ha logrado replicar?"],
+[1,"Infancia y raíces","¿Cuál fue tu primera forma de ganar plata?"],
+[1,"Infancia y raíces","¿Qué juguete recuerdas con más cariño?"],
+[1,"Relaciones","¿Quién fue la primera persona que te hizo sentir realmente escuchado?"],
+[1,"Relaciones","¿Cómo se llamaba tu mejor amigo del colegio y qué fue de él?"],
+[1,"Relaciones","¿Qué haces cuando quieres animar a alguien que quieres?"],
+[1,"Relaciones","¿Prefieres pocos amigos muy cercanos o muchos conocidos?"],
+[1,"Trabajo y ambición","¿Qué parte de tu trabajo harías gratis?"],
+[1,"Trabajo y ambición","¿Cuál ha sido el mejor consejo profesional que te han dado?"],
+[1,"Trabajo y ambición","Si mañana no tuvieras que trabajar por plata, ¿qué harías el lunes?"],
+[1,"Trabajo y ambición","¿Qué habilidad tuya crees que está subvalorada?"],
+[1,"Divertidas","¿Cuál es tu placer culposo que defenderías en público?"],
+[1,"Divertidas","¿Qué canción te sabes completa aunque te dé pena admitirlo?"],
+[1,"Divertidas","Si pudieras tener un talento inútil garantizado, ¿cuál sería?"],
+[1,"Divertidas","¿Cuál es la cosa más rara que has comido?"],
+[1,"Divertidas","¿Qué apodo te han puesto que más te ha gustado?"],
+[1,"Divertidas","¿Cuál es tu teoría conspirativa favorita, aunque no la creas?"],
+[1,"Divertidas","¿Qué serie o película puedes ver mil veces sin cansarte?"],
+[1,"Divertidas","¿Cuál es el peor corte de pelo que has tenido?"],
+[1,"Divertidas","Si tu vida tuviera una canción de entrada, ¿cuál sería?"],
+[1,"Divertidas","¿Cuál es tu muletilla que más repites sin darte cuenta?"],
+[1,"Valores y creencias","¿Qué costumbre o tradición conservarías siempre?"],
+[1,"Valores y creencias","¿Qué te da rabia que la gente normalice?"],
+[1,"Valores y creencias","¿Qué cualidad admiras más en una persona?"],
+[1,"Valores y creencias","¿Prefieres que te digan la verdad incómoda o que te cuiden con silencio?"],
+[1,"Futuro","¿A qué lugar del mundo quieres ir sí o sí antes de morir?"],
+[1,"Futuro","¿Qué te gustaría aprender este año?"],
+[1,"Futuro","¿Cómo te imaginas un día perfecto dentro de 10 años?"],
+[1,"Futuro","¿Qué te gustaría que la gente dijera de ti en una fiesta cuando no estás?"],
+[1,"Divertidas","¿Eres más de mañana o de noche, y cómo se nota?"],
+[1,"Valores y creencias","¿Cuál es tu forma favorita de descansar de verdad?"],
+[1,"Divertidas","¿Qué te hace reír sin falta?"],
+[1,"Divertidas","¿Cuál es la mejor compra que has hecho por menos de 50 mil pesos?"],
+[1,"Divertidas","¿Qué es algo que todos parecen disfrutar y a ti no te gusta?"],
+[1,"Divertidas","¿Cuál es el mejor plan de domingo para ti?"],
+[1,"Divertidas","Si tuvieras que comer un solo plato el resto de tu vida, ¿cuál sería?"],
+[1,"Divertidas","¿Qué es lo primero que haces al despertar?"],
+[1,"Infancia y raíces","¿Cuál es el viaje que más recuerdas y por qué?"],
+[1,"Valores y creencias","¿Qué te calma cuando estás estresado?"],
+[1,"Valores y creencias","¿Qué libro, podcast o video te cambió la forma de ver algo?"],
+[1,"Futuro","¿Qué habilidad práctica te gustaría tener ya dominada?"],
+[1,"Futuro","¿Qué te gustaría hacer más seguido y no haces?"],
+[2,"Miedos e inseguridades","¿Qué es lo que más miedo te da de envejecer?"],
+[2,"Miedos e inseguridades","¿En qué situación te sientes más inseguro?"],
+[2,"Miedos e inseguridades","¿Qué crítica te han hecho que te dolió porque era cierta?"],
+[2,"Miedos e inseguridades","¿De qué te da miedo que la gente se dé cuenta?"],
+[2,"Miedos e inseguridades","¿Qué es lo que más te cuesta pedir?"],
+[2,"Relaciones","¿Con quién de tu familia te gustaría tener una mejor relación?"],
+[2,"Relaciones","¿Qué necesitas de la gente que quieres y casi nunca pides?"],
+[2,"Relaciones","¿Cómo sabes que confías en alguien?"],
+[2,"Relaciones","¿Qué amistad perdiste y todavía extrañas?"],
+[2,"Relaciones","¿Qué patrón repites en tus relaciones?"],
+[2,"Relaciones","¿Cuándo fue la última vez que te sentiste solo estando acompañado?"],
+[2,"Relaciones","Cuando estás dolido, ¿te acercas o te alejas?"],
+[2,"Trabajo y ambición","¿Alguna vez has sentido que estás en el camino equivocado? ¿Cuándo?"],
+[2,"Trabajo y ambición","¿Qué parte de tus logros le debes a la suerte?"],
+[2,"Trabajo y ambición","¿Qué te haría renunciar mañana?"],
+[2,"Trabajo y ambición","¿A quién le tienes envidia sana y por qué?"],
+[2,"Trabajo y ambición","¿Cuál ha sido tu fracaso más útil?"],
+[2,"Arrepentimientos","¿Qué decisión cambiarías si pudieras volver?"],
+[2,"Arrepentimientos","¿A quién le debes una disculpa que nunca diste?"],
+[2,"Arrepentimientos","¿Qué oportunidad dejaste pasar por miedo?"],
+[2,"Arrepentimientos","¿De qué te arrepientes de no haber dicho a tiempo?"],
+[2,"Valores y creencias","¿En qué has cambiado de opinión en los últimos años?"],
+[2,"Valores y creencias","¿Qué mentira te has contado por mucho tiempo?"],
+[2,"Valores y creencias","¿Qué haces que sabes que no está bien y sigues haciendo?"],
+[2,"Valores y creencias","¿Qué es lo que más te cuesta perdonar?"],
+[2,"Valores y creencias","¿Qué opinión tuya te ha costado gente?"],
+[2,"Infancia y raíces","¿Qué te faltó de niño que ahora buscas de adulto?"],
+[2,"Infancia y raíces","¿Qué te enseñaron en tu casa que tuviste que desaprender?"],
+[2,"Infancia y raíces","¿Cómo eras a los 15 y qué le dirías hoy a ese?"],
+[2,"Infancia y raíces","¿Qué recuerdo de tu infancia entiendes distinto ahora?"],
+[2,"Futuro","¿Qué te da miedo que no pase en tu vida?"],
+[2,"Futuro","¿Qué estás postergando y sabes que tienes que hacer?"],
+[2,"Futuro","¿Cómo quieres que sea tu vida a los 60?"],
+[2,"Miedos e inseguridades","¿Cuál es la conversación que estás evitando?"],
+[2,"Valores y creencias","¿Qué te hace sentir orgulloso de ti y casi nunca dices?"],
+[2,"Miedos e inseguridades","¿Cuándo fue la última vez que lloraste y por qué?"],
+[2,"Trabajo y ambición","¿Qué parte de ti escondes en el trabajo?"],
+[2,"Relaciones","¿Qué necesitas escuchar hoy?"],
+[2,"Miedos e inseguridades","¿Qué te agota de ser tú?"],
+[2,"Valores y creencias","¿Qué haces cuando nadie te ve?"],
+[3,"Miedos e inseguridades","¿Cuál ha sido el momento más solo de tu vida?"],
+[3,"Arrepentimientos","¿Qué es lo que más te avergüenza haber hecho?"],
+[3,"Relaciones","¿A quién no has perdonado y por qué?"],
+[3,"Relaciones","¿Qué le dirías hoy a la persona que más te ha dolido?"],
+[3,"Miedos e inseguridades","¿Qué parte de ti crees que nadie ha visto nunca?"],
+[3,"Miedos e inseguridades","¿Qué es lo que más miedo te da de ti mismo?"],
+[3,"Arrepentimientos","¿Qué te falta perdonarte?"],
+[3,"Miedos e inseguridades","¿Cuál es la herida que todavía no ha cerrado?"],
+[3,"Relaciones","¿Qué has hecho por amor de lo que no te sientes orgulloso?"],
+[3,"Arrepentimientos","¿A quién has decepcionado y te sigue pesando?"],
+[3,"Relaciones","¿Qué le ocultas a la gente que más quieres?"],
+[3,"Relaciones","¿Qué es lo que más extrañas de alguien que ya no está?"],
+[3,"Valores y creencias","¿Qué te haría sentir que tu vida valió la pena?"],
+[3,"Valores y creencias","¿Qué es lo más difícil que has tenido que aceptar?"],
+[3,"Infancia y raíces","¿Qué te gustaría que tu papá o tu mamá te hubieran dicho?"],
+[3,"Relaciones","¿Qué le perdonaste a alguien que no merecía perdón?"],
+[3,"Relaciones","¿Cuándo fue la última vez que te sentiste realmente amado?"],
+[3,"Miedos e inseguridades","¿Qué parte de tu historia te cuesta contar?"],
+[3,"Miedos e inseguridades","¿Qué crees que la gente malinterpreta de ti?"],
+[3,"Valores y creencias","¿Qué estás cargando que no te corresponde?"],
+[3,"Relaciones","¿Alguna vez dejaste de querer a alguien de un día para otro? ¿Qué pasó?"],
+[3,"Miedos e inseguridades","¿Qué te repites cuando estás mal contigo?"],
+[3,"Relaciones","¿Qué relación tuya está sostenida por costumbre y no por ganas?"],
+[3,"Arrepentimientos","¿Qué te ha costado más caro: hablar o quedarte callado?"],
+[3,"Trabajo y ambición","¿Qué versión de ti sacrificaste para llegar donde estás?"],
+[3,"Relaciones","¿Qué te da miedo que yo piense de ti?"],
+[3,"Relaciones","¿Qué necesitas de mí que no me has pedido?"],
+[3,"Relaciones","¿Qué fue lo primero que pensaste de mí y cómo cambió?"],
+[3,"Relaciones","¿Qué admiras de mí que nunca me has dicho?"],
+[3,"Relaciones","¿En qué momento pensaste en alejarte de mí?"],
+[3,"Relaciones","¿Qué te gustaría que yo supiera de ti sin tener que explicarlo?"],
+[3,"Relaciones","¿Qué te hace sentir seguro conmigo?"],
+[3,"Miedos e inseguridades","¿Qué duelo no has terminado de vivir?"],
+[3,"Arrepentimientos","¿Qué te reprochas de cómo trataste a alguien?"],
+[3,"Arrepentimientos","¿Cuál ha sido tu momento de mayor vergüenza y qué aprendiste?"],
+[3,"Relaciones","¿Qué es lo que más te gusta que te hagan en la cama?"],
+[3,"Relaciones","¿Qué te enciende de inmediato: una palabra, un gesto o un tipo de contacto?"],
+[3,"Relaciones","¿Qué parte de tu cuerpo es tu punto débil cuando te tocan?"],
+[3,"Relaciones","¿Qué es lo más atrevido que has hecho en la intimidad?"],
+[3,"Relaciones","¿Hay algo que siempre has querido probar en la cama y no te has atrevido a pedir?"],
+[3,"Relaciones","En la intimidad, ¿qué pesa más para ti: la conexión emocional o la química física?"],
+[3,"Relaciones","¿Cuál ha sido tu mejor momento íntimo y qué lo hizo tan especial?"],
+[3,"Relaciones","¿Prefieres tomar la iniciativa en la cama o que la tomen contigo? ¿Por qué?"],
+[3,"Relaciones","¿Cómo te gusta el 'después': abrazos, conversar, dormir… o repetir?"],
+[3,"Relaciones","¿Cuál es una fantasía que nunca has confesado pero te encantaría cumplir?"]
+];
+
+const PTS={1:[5,-2],2:[10,-5],3:[20,-10]};
+const LVL={1:{name:"1 · Suave",ga:"var(--l1a)",gb:"var(--l1b)"},2:{name:"2 · Personal",ga:"var(--l2a)",gb:"var(--l2b)"},3:{name:"3 · Íntima",ga:"var(--l3a)",gb:"var(--l3b)"}};
+const CATEMOJI={"Infancia y raíces":"🌱","Relaciones":"💞","Trabajo y ambición":"💼","Miedos e inseguridades":"🌑","Valores y creencias":"🧭","Divertidas":"🎉","Futuro":"🔮","Arrepentimientos":"🕯️"};
+const KEY="juego-cartas-v1";
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+function clearSave(){try{localStorage.removeItem(KEY)}catch(e){}}
+
+function newState(){return{phase:"setup",sub:"choice",round:1,turn:0,used:[],cur:null,last:null,
+  players:[mkPlayer(""),mkPlayer("")]}}
+function mkPlayer(name){return{name:name,score:0,ans:0,sk:0,lv:{1:[0,0],2:[0,0],3:[0,0]},cat:{}}}
+let S=newState();
+let pendingResume=null;
+
+function weights(r){if(r<=3)return[1,0,0];if(r<=6)return[.6,.4,0];if(r<=9)return[.2,.5,.3];return[.1,.4,.5]}
+function availableByLevel(){const a={1:[],2:[],3:[]};QUESTIONS.forEach((q,i)=>{if(!S.used.includes(i))a[q[0]].push(i)});return a}
+function pickQuestion(){
+  const avail=availableByLevel();
+  let w=weights(S.round).slice();
+  for(let l=1;l<=3;l++)if(!avail[l].length)w[l-1]=0;
+  const tot=w[0]+w[1]+w[2];
+  if(tot===0)return null;
+  let r=Math.random()*tot,lvl=3;
+  for(let l=1;l<=3;l++){if(r<w[l-1]){lvl=l;break}r-=w[l-1]}
+  const pool=avail[lvl];
+  const idx=pool[Math.floor(Math.random()*pool.length)];
+  S.used.push(idx);
+  return idx;
+}
+
+const app=document.getElementById("app");
+const G={};
+window.G=G;
+
+function turnChip(){const p=S.players[S.turn];return `<span class="chip turn${S.turn+1}"><span class="dot" style="background:var(--p${S.turn+1})"></span>Turno de ${esc(p.name)}</span>`}
+function topbar(){return `<div class="topbar"><span class="chip">Ronda ${S.round}</span>${turnChip()}<button class="linkbtn" id="btn-end" onclick="G.askEnd()">Terminar</button></div>`}
+
+/* ---------- screens ---------- */
+function renderSetup(){
+  app.innerHTML=`<div class="screen"><div class="hero">
+    <div class="logo">🎴</div>
+    <h1>Cartas</h1>
+    <p>Un juego de preguntas para conocerse mejor. Se rotan el celular: responde en voz alta y gana puntos… o pasa y piérdelos.</p>
+  </div>
+  <div class="stack">
+    <div class="field"><label for="p1name"><span class="dot" style="background:var(--p1)"></span>Jugador 1</label><input id="p1name" maxlength="18" placeholder="Nombre" autocomplete="off"/></div>
+    <div class="field"><label for="p2name"><span class="dot" style="background:var(--p2)"></span>Jugador 2</label><input id="p2name" maxlength="18" placeholder="Nombre" autocomplete="off"/></div>
+    <button class="btn btn-grad" style="--ga:#8ab6ef;--gb:#c58ada" id="btn-start" onclick="G.start()">Iniciar partida 🚀</button>
+    <p class="center">Suave +5/−2 · Personal +10/−5 · Íntima +20/−10</p>
+  </div></div>`;
+}
+
+function renderResume(st){
+  const [a,b]=st.players;
+  app.innerHTML=`<div class="screen"><div class="hero">
+    <div class="logo">🎴</div><h1>Partida en curso</h1>
+    <p>Ronda ${st.round} — ${esc(a.name)} ${a.score} pts vs ${esc(b.name)} ${b.score} pts</p></div>
+  <div class="stack">
+    <button class="btn btn-grad" style="--ga:#8ab6ef;--gb:#c58ada" id="btn-resume" onclick="G.resume()">Continuar partida ▶️</button>
+    <button class="btn btn-ghost" id="btn-fresh" onclick="G.fresh()">Nueva partida</button>
+  </div></div>`;
+}
+
+function renderHandoff(){
+  const p=S.players[S.turn];
+  let banner="";
+  if(S.last){banner=`<span class="banner ${S.last.d>0?"gain":"loss"}">${S.last.d>0?"✨":"🙈"} ${S.last.d>0?"+":""}${S.last.d} pts para ${esc(S.last.name)}</span>`}
+  app.innerHTML=`${topbar()}<div class="screen"><div class="handoff">
+    ${banner}
+    <div class="big">📲</div>
+    <h2>Pásale el celular a<br/><span style="color:var(--p${S.turn+1})">${esc(p.name)}</span></h2>
+    <p>Que nadie más mire 👀 — Ronda ${S.round}</p>
+    <button class="btn btn-grad" style="--ga:#8ab6ef;--gb:#c58ada;max-width:320px" id="btn-ready" onclick="G.ready()">Soy ${esc(p.name)}, estoy listo/a ✋</button>
+  </div></div>`;
+}
+
+function renderQuestion(){
+  const q=QUESTIONS[S.cur],lvl=LVL[q[0]],[win,lose]=PTS[q[0]];
+  const chips=`<div class="chips"><span class="lvlchip">${lvl.name}</span><span class="catchip">${CATEMOJI[q[1]]||""} ${esc(q[1])}</span></div>`;
+  let body="";
+  if(S.sub==="choice"){
+    body=`<div class="card" style="--ga:${lvl.ga};--gb:${lvl.gb}">${chips}
+      <div class="q">${esc(q[2])}</div>
+      <div class="vals"><span class="gain">✓ Responder +${win}</span><span class="loss">✗ Pasar ${lose}</span></div>
+    </div>
+    <div class="stack">
+      <button class="btn btn-grad" style="--ga:${lvl.ga};--gb:${lvl.gb}" id="btn-answer" onclick="G.answer()">Responder&nbsp;<small>+${win}</small></button>
+      <button class="btn btn-danger" id="btn-skip" onclick="G.skip()">No responder&nbsp;<small>${lose}</small></button>
+      <button class="btn btn-ghost" id="btn-points" onclick="G.points()">📊 Ver puntos</button>
+    </div>`;
+  }else if(S.sub==="answer"){
+    body=`<div class="card" style="--ga:${lvl.ga};--gb:${lvl.gb}">${chips}
+      <div class="bigicon">🗣️</div>
+      <div class="q" style="font-size:20px">${esc(q[2])}</div>
+      <p class="subtxt">Respóndela en voz alta, sin afán. Cuando termines, confirma para ganar tus puntos.</p>
+    </div>
+    <div class="stack">
+      <button class="btn btn-grad" style="--ga:${lvl.ga};--gb:${lvl.gb}" id="btn-confirm-answer" onclick="G.confirmAnswer()">Listo, respondida ✓&nbsp;<small>+${win}</small></button>
+      <button class="btn btn-ghost" id="btn-back" onclick="G.back()">← Volver</button>
+    </div>`;
+  }else{
+    body=`<div class="card" style="--ga:${lvl.ga};--gb:${lvl.gb}">${chips}
+      <div class="bigicon">😬</div>
+      <div class="q" style="font-size:20px">¿Seguro que pasas?</div>
+      <p class="subtxt">Perderás ${Math.abs(lose)} puntos y la pregunta se descarta para siempre.</p>
+    </div>
+    <div class="stack">
+      <button class="btn btn-danger" id="btn-confirm-skip" onclick="G.confirmSkip()">Sí, paso&nbsp;<small>${lose}</small></button>
+      <button class="btn btn-ghost" id="btn-back" onclick="G.back()">← Volver</button>
+    </div>`;
+  }
+  app.innerHTML=`${topbar()}<div class="screen" style="justify-content:flex-start;padding-top:8px">${body}</div>`;
+}
+
+function lvlTags(p){return [1,2,3].map(l=>`<span class="lvltag">${LVL[l].name.split(" · ")[1]} ${p.lv[l][0]}✓ ${p.lv[l][1]}✗</span>`).join("")}
+function mostAvoided(p){let best=null,n=0;for(const c in p.cat){if(p.cat[c]>n){n=p.cat[c];best=c}}return best?`Evita hablar de: ${CATEMOJI[best]||""} ${best}`:"No evitó ninguna pregunta 💪"}
+
+function renderEnd(auto){
+  const [a,b]=S.players;
+  let title,crown;
+  if(a.score===b.score){title="¡Empate!";crown="🤝"}
+  else{const w=a.score>b.score?a:b;title=`¡Gana ${esc(w.name)}!`;crown="👑"}
+  const cards=S.players.map((p,i)=>`<div class="statcard">
+      <div class="head"><span class="nm"><span class="dot" style="background:var(--p${i+1})"></span>${esc(p.name)}</span><span class="pts">${p.score} pts</span></div>
+      <div class="line">Respondidas ${p.ans} · Evitadas ${p.sk}</div>
+      <div class="lvlrow">${lvlTags(p)}</div>
+      <div class="line">${mostAvoided(p)}</div>
+    </div>`).join("");
+  app.innerHTML=`<canvas class="confetti" id="cv"></canvas><div class="screen"><div class="end">
+    <div class="crown">${crown}</div>
+    <h2>${title}</h2>
+    <p class="sub">${auto?"¡Se acabaron las preguntas! ":""}Jugaron ${S.used.length} carta${S.used.length!==1?"s":""} en ${Math.max(1,S.round-(S.turn===0?1:0))} ronda${Math.max(1,S.round-(S.turn===0?1:0))!==1?"s":""}.</p>
+    ${cards}
+    <button class="btn btn-grad" style="--ga:#8ab6ef;--gb:#c58ada" id="btn-new" onclick="G.fresh()">Nueva partida 🔄</button>
+  </div></div>`;
+  confetti();
+}
+
+/* points overlay & end modal */
+function showOverlay(html){const o=document.createElement("div");o.className="overlay";o.id="ovl";o.innerHTML=`<div class="sheet">${html}</div>`;document.body.appendChild(o)}
+function closeOverlay(){const o=document.getElementById("ovl");if(o)o.remove()}
+G.points=function(){
+  const rows=S.players.map((p,i)=>`<div class="scorerow"><div><div class="nm"><span class="dot" style="background:var(--p${i+1})"></span>${esc(p.name)}</div><div class="meta">Respondidas ${p.ans} · Evitadas ${p.sk}</div></div><div class="pts">${p.score}</div></div>`).join("");
+  showOverlay(`<h3>📊 Marcador — Ronda ${S.round}</h3>${rows}<button class="btn" id="btn-close-points" onclick="G.closePoints()">Seguir jugando</button>`);
+};
+G.closePoints=closeOverlay;
+G.askEnd=function(){
+  showOverlay(`<h3>¿Terminar la partida?</h3><p class="center">Verán el marcador final y las estadísticas.</p>
+  <button class="btn btn-danger" id="btn-confirm-end" onclick="G.end()">Sí, terminar 🏁</button>
+  <button class="btn btn-ghost" id="btn-cancel-end" onclick="G.closePoints()">Seguir jugando</button>`);
+};
+
+/* ---------- actions ---------- */
+G.start=function(){
+  const n1=document.getElementById("p1name").value.trim()||"Jugador 1";
+  const n2=document.getElementById("p2name").value.trim()||"Jugador 2";
+  S=newState();S.players[0].name=n1;S.players[1].name=n2;
+  S.phase="handoff";S.last=null;save();renderHandoff();
+};
+G.ready=function(){
+  if(S.cur==null){const idx=pickQuestion();if(idx==null){G.end(true);return}S.cur=idx}
+  S.phase="question";S.sub="choice";save();renderQuestion();
+};
+G.answer=function(){S.sub="answer";save();renderQuestion()};
+G.skip=function(){S.sub="skip";save();renderQuestion()};
+G.back=function(){S.sub="choice";save();renderQuestion()};
+G.confirmAnswer=function(){
+  const q=QUESTIONS[S.cur],p=S.players[S.turn],d=PTS[q[0]][0];
+  p.score+=d;p.ans++;p.lv[q[0]][0]++;
+  S.last={d:d,name:p.name};advance();
+};
+G.confirmSkip=function(){
+  const q=QUESTIONS[S.cur],p=S.players[S.turn],d=PTS[q[0]][1];
+  p.score+=d;p.sk++;p.lv[q[0]][1]++;p.cat[q[1]]=(p.cat[q[1]]||0)+1;
+  S.last={d:d,name:p.name};advance();
+};
+function advance(){
+  S.cur=null;S.sub="choice";
+  if(S.turn===0){S.turn=1}else{S.turn=0;S.round++}
+  S.phase="handoff";save();renderHandoff();
+}
+G.end=function(auto){closeOverlay();S.phase="end";save();renderEnd(auto===true)};
+G.fresh=function(){clearSave();S=newState();renderSetup()};
+G.resume=function(){S=pendingResume;pendingResume=null;if(S.phase==="question")S.sub=S.sub||"choice";
+  if(S.phase==="handoff"||S.phase==="question"){S.phase==="handoff"?renderHandoff():renderQuestion()}else{renderSetup()}};
+
+/* confetti */
+function confetti(){
+  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const cv=document.getElementById("cv");if(!cv)return;
+  const ctx=cv.getContext("2d");cv.width=innerWidth;cv.height=innerHeight;
+  const colors=["#5E9FE8","#EAC26B","#72BC8F","#BF8EDA","#DE9255","#DF84A8"];
+  const parts=Array.from({length:110},()=>({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*.5,
+    w:6+Math.random()*6,h:8+Math.random()*8,c:colors[Math.floor(Math.random()*colors.length)],
+    vy:2+Math.random()*3,vx:-1+Math.random()*2,r:Math.random()*Math.PI,vr:-.1+Math.random()*.2}));
+  let t=0;
+  (function tick(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore()});
+    if(++t<260)requestAnimationFrame(tick);else ctx.clearRect(0,0,cv.width,cv.height);
+  })();
+}
+
+/* ---------- boot ---------- */
+(function(){
+  const saved=load();
+  if(saved&&(saved.phase==="handoff"||saved.phase==="question")&&saved.players&&saved.players[0].name){
+    pendingResume=saved;renderResume(saved);
+  }else{renderSetup()}
+})();
+</script>
+</body>
+</html>

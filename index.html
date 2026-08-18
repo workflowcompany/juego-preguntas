@@ -3,41 +3,63 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Cartas — Juego de preguntas</title>
+<title>Mística — Juego de preguntas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
 <style>
 :root{
-  --bg:#14102a; --surface:#211a40; --raised:#2c2455;
-  --text:#ffffff; --sub:rgba(255,255,255,.65); --border:rgba(255,255,255,.16);
-  --l1a:#34d399; --l1b:#0ea5a4; --l2a:#fbbf24; --l2b:#f97316; --l3a:#fb7185; --l3b:#e11d48;
-  --p1:#5E9FE8; --p2:#DF84A8;
+  --bg:#0a0618; --surface:#15102a; --raised:#1f1738;
+  --text:#f5f0ff; --sub:rgba(220,205,255,.72); --border:rgba(180,140,255,.22);
+  --gold:#d4af37; --gold-dim:#a8882a; --glow:rgba(180,120,255,.35);
+  --l1a:#7dd3b0; --l1b:#3d9a8b; --l2a:#e8c547; --l2b:#c97b2e; --l3a:#e879a9; --l3b:#9333ea;
+  --p1:#9b7fd4; --p2:#d4a574;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  background:radial-gradient(1100px 700px at 50% -10%, #33215c 0%, #14102a 62%) fixed, var(--bg);
+  font-family:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  background:
+    radial-gradient(900px 500px at 15% 10%, rgba(147,51,234,.18) 0%, transparent 55%),
+    radial-gradient(700px 450px at 85% 20%, rgba(212,175,55,.1) 0%, transparent 50%),
+    radial-gradient(600px 400px at 50% 100%, rgba(88,28,135,.25) 0%, transparent 60%),
+    var(--bg);
   color:var(--text); min-height:100svh; -webkit-font-smoothing:antialiased;
+  position:relative;
 }
-#app{max-width:480px;margin:0 auto;min-height:100svh;display:flex;flex-direction:column;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,.55) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,.35) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 45% 8%, rgba(255,255,255,.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 55%, rgba(255,255,255,.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 78% 22%, rgba(255,255,255,.45) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 88% 70%, rgba(255,255,255,.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 35% 82%, rgba(255,255,255,.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 38%, rgba(255,255,255,.5) 0%, transparent 100%);
+  opacity:.85;
+}
+#app{max-width:480px;margin:0 auto;min-height:100svh;display:flex;flex-direction:column;padding:16px 16px calc(16px + env(safe-area-inset-bottom));position:relative;z-index:1}
 .screen{flex:1;display:flex;flex-direction:column;justify-content:center;gap:24px;animation:fade .35s ease}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* header */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0 12px}
 .chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--raised);border:1px solid var(--border);color:var(--text);white-space:nowrap}
-.chip.turn1{background:rgba(94,159,232,.18);border-color:rgba(94,159,232,.5)}
-.chip.turn2{background:rgba(223,132,168,.18);border-color:rgba(223,132,168,.5)}
+.chip.turn1{background:rgba(155,127,212,.2);border-color:rgba(155,127,212,.55)}
+.chip.turn2{background:rgba(212,165,116,.18);border-color:rgba(212,165,116,.5)}
 .linkbtn{background:none;border:none;color:var(--sub);font-size:13px;font-weight:600;cursor:pointer;padding:8px 4px;min-height:44px}
 .linkbtn:hover{color:#fff}
 
 /* buttons */
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;border-radius:16px;
   border:1px solid var(--border);background:var(--raised);color:#fff;font-size:16px;font-weight:700;cursor:pointer;
-  transition:transform .08s ease, filter .15s ease;font-family:inherit}
+  transition:transform .08s ease, filter .15s ease;font-family:"Cinzel",serif;letter-spacing:.03em}
 .btn:active{transform:scale(.97)}
 .btn:hover{filter:brightness(1.1)}
-.btn:focus-visible{outline:3px solid #8ab6ef;outline-offset:2px}
-.btn-grad{border:none;color:#180f2e;background:linear-gradient(135deg,var(--ga,#34d399),var(--gb,#0ea5a4))}
+.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn-grad{border:none;color:#1a0f2e;background:linear-gradient(135deg,var(--ga,#d4af37),var(--gb,#9333ea));box-shadow:0 0 20px var(--glow)}
 .btn-ghost{background:transparent}
 .btn-danger{background:rgba(233,115,102,.14);border-color:rgba(233,115,102,.5);color:#ffb1a8}
 .btn small{font-weight:600;opacity:.75}
@@ -45,20 +67,31 @@ body{
 
 /* setup */
 .hero{text-align:center;display:flex;flex-direction:column;gap:10px}
-.hero .logo{font-size:52px;line-height:1}
-.hero h1{font-size:30px;letter-spacing:-.02em}
-.hero p{color:var(--sub);font-size:15px;line-height:1.5;max-width:34ch;margin:0 auto}
+.hero .logo{font-size:52px;line-height:1;filter:drop-shadow(0 0 12px var(--glow));animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.hero h1{font-family:"Cinzel",serif;font-size:34px;letter-spacing:.08em;font-weight:700;background:linear-gradient(135deg,var(--gold),#e8d5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--sub);font-size:16px;line-height:1.55;max-width:38ch;margin:0 auto}
+.warning{
+  background:linear-gradient(135deg,rgba(147,51,234,.12),rgba(212,175,55,.08));
+  border:1px solid rgba(212,175,55,.35);border-radius:16px;padding:16px 18px;
+  text-align:left;display:flex;flex-direction:column;gap:10px;
+  box-shadow:0 0 24px rgba(147,51,234,.15), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.warning .warn-title{font-family:"Cinzel",serif;font-size:13px;font-weight:700;letter-spacing:.06em;color:var(--gold);display:flex;align-items:center;gap:8px}
+.warning p{font-size:14.5px;line-height:1.55;color:var(--sub);margin:0}
+.warning .cats{font-size:13.5px;line-height:1.65;color:rgba(220,205,255,.85)}
+.warning .cats strong{color:var(--text);font-weight:600}
 .field{display:flex;flex-direction:column;gap:6px;text-align:left}
-.field label{font-size:13px;font-weight:700;color:var(--sub)}
-.field input{min-height:52px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:#fff;font-size:16px;padding:0 16px;font-family:inherit}
-.field input:focus{outline:2px solid #8ab6ef;border-color:transparent}
+.field label{font-family:"Cinzel",serif;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--sub)}
+.field input{min-height:52px;border-radius:14px;border:1px solid var(--border);background:rgba(10,6,24,.6);color:#fff;font-size:17px;padding:0 16px;font-family:inherit}
+.field input:focus{outline:2px solid var(--gold);border-color:transparent;box-shadow:0 0 16px var(--glow)}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:1px}
 
 /* handoff */
 .handoff{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
 .handoff .big{font-size:64px;animation:bounce 1.4s ease infinite}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.handoff h2{font-size:26px;letter-spacing:-.02em}
+.handoff h2{font-family:"Cinzel",serif;font-size:24px;letter-spacing:.04em;line-height:1.35}
 .handoff p{color:var(--sub);font-size:15px}
 .banner{font-size:14px;font-weight:700;padding:10px 16px;border-radius:12px;display:inline-flex;gap:8px;align-items:center}
 .banner.gain{background:rgba(114,188,143,.15);color:#8fe0b0;border:1px solid rgba(114,188,143,.4)}
@@ -66,7 +99,7 @@ body{
 
 /* question card */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:26px 22px;
-  box-shadow:0 1px 2px rgba(0,0,0,.25), 0 14px 40px rgba(0,0,0,.35);
+  box-shadow:0 0 30px rgba(147,51,234,.12), 0 14px 40px rgba(0,0,0,.4);
   animation:flip .5s cubic-bezier(.2,.7,.3,1);transform-style:preserve-3d;position:relative;overflow:hidden}
 .card::before{content:"";position:absolute;inset:0 0 auto 0;height:6px;background:linear-gradient(90deg,var(--ga),var(--gb))}
 @keyframes flip{from{transform:rotateY(80deg);opacity:0}to{transform:rotateY(0);opacity:1}}
@@ -92,7 +125,7 @@ body{
 /* end screen */
 .end{display:flex;flex-direction:column;gap:18px;text-align:center;padding:8px 0}
 .end .crown{font-size:56px}
-.end h2{font-size:28px;letter-spacing:-.02em}
+.end h2{font-family:"Cinzel",serif;font-size:26px;letter-spacing:.04em}
 .end .sub{color:var(--sub);font-size:15px}
 .statcard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;text-align:left;display:flex;flex-direction:column;gap:10px}
 .statcard .head{display:flex;justify-content:space-between;align-items:baseline}
@@ -230,21 +263,11 @@ const QUESTIONS=[
 [3,"Relaciones","¿Qué te hace sentir seguro conmigo?"],
 [3,"Miedos e inseguridades","¿Qué duelo no has terminado de vivir?"],
 [3,"Arrepentimientos","¿Qué te reprochas de cómo trataste a alguien?"],
-[3,"Arrepentimientos","¿Cuál ha sido tu momento de mayor vergüenza y qué aprendiste?"],
-[3,"Relaciones","¿Qué es lo que más te gusta que te hagan en la cama?"],
-[3,"Relaciones","¿Qué te enciende de inmediato: una palabra, un gesto o un tipo de contacto?"],
-[3,"Relaciones","¿Qué parte de tu cuerpo es tu punto débil cuando te tocan?"],
-[3,"Relaciones","¿Qué es lo más atrevido que has hecho en la intimidad?"],
-[3,"Relaciones","¿Hay algo que siempre has querido probar en la cama y no te has atrevido a pedir?"],
-[3,"Relaciones","En la intimidad, ¿qué pesa más para ti: la conexión emocional o la química física?"],
-[3,"Relaciones","¿Cuál ha sido tu mejor momento íntimo y qué lo hizo tan especial?"],
-[3,"Relaciones","¿Prefieres tomar la iniciativa en la cama o que la tomen contigo? ¿Por qué?"],
-[3,"Relaciones","¿Cómo te gusta el 'después': abrazos, conversar, dormir… o repetir?"],
-[3,"Relaciones","¿Cuál es una fantasía que nunca has confesado pero te encantaría cumplir?"]
+[3,"Arrepentimientos","¿Cuál ha sido tu momento de mayor vergüenza y qué aprendiste?"]
 ];
 
 const PTS={1:[5,-2],2:[10,-5],3:[20,-10]};
-const LVL={1:{name:"1 · Suave",ga:"var(--l1a)",gb:"var(--l1b)"},2:{name:"2 · Personal",ga:"var(--l2a)",gb:"var(--l2b)"},3:{name:"3 · Íntima",ga:"var(--l3a)",gb:"var(--l3b)"}};
+const LVL={1:{name:"I · Susurro",ga:"var(--l1a)",gb:"var(--l1b)"},2:{name:"II · Confesión",ga:"var(--l2a)",gb:"var(--l2b)"},3:{name:"III · Revelación",ga:"var(--l3a)",gb:"var(--l3b)"}};
 const CATEMOJI={"Infancia y raíces":"🌱","Relaciones":"💞","Trabajo y ambición":"💼","Miedos e inseguridades":"🌑","Valores y creencias":"🧭","Divertidas":"🎉","Futuro":"🔮","Arrepentimientos":"🕯️"};
 const KEY="juego-cartas-v1";
 
@@ -285,25 +308,31 @@ function topbar(){return `<div class="topbar"><span class="chip">Ronda ${S.round
 /* ---------- screens ---------- */
 function renderSetup(){
   app.innerHTML=`<div class="screen"><div class="hero">
-    <div class="logo">🎴</div>
-    <h1>Cartas</h1>
-    <p>Un juego de preguntas para conocerse mejor. Se rotan el celular: responde en voz alta y gana puntos… o pasa y piérdelos.</p>
+    <div class="logo">🔮</div>
+    <h1>Mística</h1>
+    <p>Las cartas revelan lo que rara vez se dice en voz alta. Se rotan el celular: responde y gana puntos… o pasa la carta y piérdelos.</p>
+  </div>
+  <div class="warning">
+    <div class="warn-title">⚠️ Aviso antes de abrir el mazo</div>
+    <p>Las preguntas suben de intensidad conforme avanzan las rondas. Pueden aparecer en tres niveles: <strong>suaves</strong>, <strong>personales</strong> y <strong>profundas</strong> — incluyendo temas sobre vuestra relación, miedos, arrepentimientos y emociones difíciles.</p>
+    <p class="cats">Categorías del mazo: <strong>🌱 Infancia y raíces</strong> · <strong>💞 Relaciones</strong> · <strong>💼 Trabajo y ambición</strong> · <strong>🌑 Miedos e inseguridades</strong> · <strong>🧭 Valores y creencias</strong> · <strong>🎉 Divertidas</strong> · <strong>🔮 Futuro</strong> · <strong>🕯️ Arrepentimientos</strong></p>
+    <p>Solo jueguen si hay confianza mutua y pueden decir «paso» en cualquier carta (perderán puntos). Nadie está obligado a responder nada.</p>
   </div>
   <div class="stack">
     <div class="field"><label for="p1name"><span class="dot" style="background:var(--p1)"></span>Jugador 1</label><input id="p1name" maxlength="18" placeholder="Nombre" autocomplete="off"/></div>
     <div class="field"><label for="p2name"><span class="dot" style="background:var(--p2)"></span>Jugador 2</label><input id="p2name" maxlength="18" placeholder="Nombre" autocomplete="off"/></div>
-    <button class="btn btn-grad" style="--ga:#8ab6ef;--gb:#c58ada" id="btn-start" onclick="G.start()">Iniciar partida 🚀</button>
-    <p class="center">Suave +5/−2 · Personal +10/−5 · Íntima +20/−10</p>
+    <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" id="btn-start" onclick="G.start()">Revelar el mazo ✨</button>
+    <p class="center">Susurro +5/−2 · Confesión +10/−5 · Revelación +20/−10</p>
   </div></div>`;
 }
 
 function renderResume(st){
   const [a,b]=st.players;
   app.innerHTML=`<div class="screen"><div class="hero">
-    <div class="logo">🎴</div><h1>Partida en curso</h1>
+    <div class="logo">🔮</div><h1>Partida en curso</h1>
     <p>Ronda ${st.round} — ${esc(a.name)} ${a.score} pts vs ${esc(b.name)} ${b.score} pts</p></div>
   <div class="stack">
-    <button class="btn btn-grad" style="--ga:#8ab6ef;--gb:#c58ada" id="btn-resume" onclick="G.resume()">Continuar partida ▶️</button>
+    <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" id="btn-resume" onclick="G.resume()">Continuar partida ▶️</button>
     <button class="btn btn-ghost" id="btn-fresh" onclick="G.fresh()">Nueva partida</button>
   </div></div>`;
 }
@@ -317,7 +346,7 @@ function renderHandoff(){
     <div class="big">📲</div>
     <h2>Pásale el celular a<br/><span style="color:var(--p${S.turn+1})">${esc(p.name)}</span></h2>
     <p>Que nadie más mire 👀 — Ronda ${S.round}</p>
-    <button class="btn btn-grad" style="--ga:#8ab6ef;--gb:#c58ada;max-width:320px" id="btn-ready" onclick="G.ready()">Soy ${esc(p.name)}, estoy listo/a ✋</button>
+    <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea;max-width:320px" id="btn-ready" onclick="G.ready()">Soy ${esc(p.name)}, estoy listo/a ✋</button>
   </div></div>`;
 }
 
@@ -378,7 +407,7 @@ function renderEnd(auto){
     <h2>${title}</h2>
     <p class="sub">${auto?"¡Se acabaron las preguntas! ":""}Jugaron ${S.used.length} carta${S.used.length!==1?"s":""} en ${Math.max(1,S.round-(S.turn===0?1:0))} ronda${Math.max(1,S.round-(S.turn===0?1:0))!==1?"s":""}.</p>
     ${cards}
-    <button class="btn btn-grad" style="--ga:#8ab6ef;--gb:#c58ada" id="btn-new" onclick="G.fresh()">Nueva partida 🔄</button>
+    <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" id="btn-new" onclick="G.fresh()">Nueva partida 🔄</button>
   </div></div>`;
   confetti();
 }
@@ -436,7 +465,7 @@ function confetti(){
   if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
   const cv=document.getElementById("cv");if(!cv)return;
   const ctx=cv.getContext("2d");cv.width=innerWidth;cv.height=innerHeight;
-  const colors=["#5E9FE8","#EAC26B","#72BC8F","#BF8EDA","#DE9255","#DF84A8"];
+  const colors=["#d4af37","#9333ea","#9b7fd4","#e879a9","#7dd3b0","#e8c547"];
   const parts=Array.from({length:110},()=>({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*.5,
     w:6+Math.random()*6,h:8+Math.random()*8,c:colors[Math.floor(Math.random()*colors.length)],
     vy:2+Math.random()*3,vx:-1+Math.random()*2,r:Math.random()*Math.PI,vr:-.1+Math.random()*.2}));

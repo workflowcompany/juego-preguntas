@@ -148,185 +148,385 @@ canvas.confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
 "use strict";
 const HOST_NAME="Sebas";
 let guestName=null;
-// [nivel, categoría, pregunta] — snapshot de preguntas ACTIVAS del Banco de Preguntas
+// [codigo, nivel, categoría, pregunta, notas] — Banco de Preguntas (Notion, Activas)
 const QUESTIONS=[
-[1,"Infancia y raíces","¿Cuál es el olor que más te devuelve a tu infancia?"],
-[1,"Infancia y raíces","¿Qué programa o caricatura veías obsesivamente de niño?"],
-[1,"Infancia y raíces","¿Cuál era tu escondite favorito cuando eras chiquito?"],
-[1,"Infancia y raíces","¿Qué comida hacía alguien de tu familia que nadie más ha logrado replicar?"],
-[1,"Infancia y raíces","¿Cuál fue tu primera forma de ganar plata?"],
-[1,"Infancia y raíces","¿Qué juguete recuerdas con más cariño?"],
-[1,"Relaciones","¿Quién fue la primera persona que te hizo sentir realmente escuchado?"],
-[1,"Relaciones","¿Cómo se llamaba tu mejor amigo del colegio y qué fue de él?"],
-[1,"Relaciones","¿Qué haces cuando quieres animar a alguien que quieres?"],
-[1,"Relaciones","¿Prefieres pocos amigos muy cercanos o muchos conocidos?"],
-[1,"Trabajo y ambición","¿Qué parte de tu trabajo harías gratis?"],
-[1,"Trabajo y ambición","¿Cuál ha sido el mejor consejo profesional que te han dado?"],
-[1,"Trabajo y ambición","Si mañana no tuvieras que trabajar por plata, ¿qué harías el lunes?"],
-[1,"Trabajo y ambición","¿Qué habilidad tuya crees que está subvalorada?"],
-[1,"Divertidas","¿Cuál es tu placer culposo que defenderías en público?"],
-[1,"Divertidas","¿Qué canción te sabes completa aunque te dé pena admitirlo?"],
-[1,"Divertidas","Si pudieras tener un talento inútil garantizado, ¿cuál sería?"],
-[1,"Divertidas","¿Cuál es la cosa más rara que has comido?"],
-[1,"Divertidas","¿Qué apodo te han puesto que más te ha gustado?"],
-[1,"Divertidas","¿Cuál es tu teoría conspirativa favorita, aunque no la creas?"],
-[1,"Divertidas","¿Qué serie o película puedes ver mil veces sin cansarte?"],
-[1,"Divertidas","¿Cuál es el peor corte de pelo que has tenido?"],
-[1,"Divertidas","Si tu vida tuviera una canción de entrada, ¿cuál sería?"],
-[1,"Divertidas","¿Cuál es tu muletilla que más repites sin darte cuenta?"],
-[1,"Valores y creencias","¿Qué costumbre o tradición conservarías siempre?"],
-[1,"Valores y creencias","¿Qué te da rabia que la gente normalice?"],
-[1,"Valores y creencias","¿Qué cualidad admiras más en una persona?"],
-[1,"Valores y creencias","¿Prefieres que te digan la verdad incómoda o que te cuiden con silencio?"],
-[1,"Futuro","¿A qué lugar del mundo quieres ir sí o sí antes de morir?"],
-[1,"Futuro","¿Qué te gustaría aprender este año?"],
-[1,"Futuro","¿Cómo te imaginas un día perfecto dentro de 10 años?"],
-[1,"Futuro","¿Qué te gustaría que la gente dijera de ti en una fiesta cuando no estás?"],
-[1,"Divertidas","¿Eres más de mañana o de noche, y cómo se nota?"],
-[1,"Valores y creencias","¿Cuál es tu forma favorita de descansar de verdad?"],
-[1,"Divertidas","¿Qué te hace reír sin falta?"],
-[1,"Divertidas","¿Cuál es la mejor compra que has hecho por menos de 50 mil pesos?"],
-[1,"Divertidas","¿Qué es algo que todos parecen disfrutar y a ti no te gusta?"],
-[1,"Divertidas","¿Cuál es el mejor plan de domingo para ti?"],
-[1,"Divertidas","Si tuvieras que comer un solo plato el resto de tu vida, ¿cuál sería?"],
-[1,"Divertidas","¿Qué es lo primero que haces al despertar?"],
-[1,"Infancia y raíces","¿Cuál es el viaje que más recuerdas y por qué?"],
-[1,"Valores y creencias","¿Qué te calma cuando estás estresado?"],
-[1,"Valores y creencias","¿Qué libro, podcast o video te cambió la forma de ver algo?"],
-[1,"Futuro","¿Qué habilidad práctica te gustaría tener ya dominada?"],
-[1,"Futuro","¿Qué te gustaría hacer más seguido y no haces?"],
-[2,"Miedos e inseguridades","¿Qué es lo que más miedo te da de envejecer?"],
-[2,"Miedos e inseguridades","¿En qué situación te sientes más inseguro?"],
-[2,"Miedos e inseguridades","¿Qué crítica te han hecho que te dolió porque era cierta?"],
-[2,"Miedos e inseguridades","¿De qué te da miedo que la gente se dé cuenta?"],
-[2,"Miedos e inseguridades","¿Qué es lo que más te cuesta pedir?"],
-[2,"Relaciones","¿Con quién de tu familia te gustaría tener una mejor relación?"],
-[2,"Relaciones","¿Qué necesitas de la gente que quieres y casi nunca pides?"],
-[2,"Relaciones","¿Cómo sabes que confías en alguien?"],
-[2,"Relaciones","¿Qué amistad perdiste y todavía extrañas?"],
-[2,"Relaciones","¿Qué patrón repites en tus relaciones?"],
-[2,"Relaciones","¿Cuándo fue la última vez que te sentiste solo estando acompañado?"],
-[2,"Relaciones","Cuando estás dolido, ¿te acercas o te alejas?"],
-[2,"Trabajo y ambición","¿Alguna vez has sentido que estás en el camino equivocado? ¿Cuándo?"],
-[2,"Trabajo y ambición","¿Qué parte de tus logros le debes a la suerte?"],
-[2,"Trabajo y ambición","¿Qué te haría renunciar mañana?"],
-[2,"Trabajo y ambición","¿A quién le tienes envidia sana y por qué?"],
-[2,"Trabajo y ambición","¿Cuál ha sido tu fracaso más útil?"],
-[2,"Arrepentimientos","¿Qué decisión cambiarías si pudieras volver?"],
-[2,"Arrepentimientos","¿A quién le debes una disculpa que nunca diste?"],
-[2,"Arrepentimientos","¿Qué oportunidad dejaste pasar por miedo?"],
-[2,"Arrepentimientos","¿De qué te arrepientes de no haber dicho a tiempo?"],
-[2,"Valores y creencias","¿En qué has cambiado de opinión en los últimos años?"],
-[2,"Valores y creencias","¿Qué mentira te has contado por mucho tiempo?"],
-[2,"Valores y creencias","¿Qué haces que sabes que no está bien y sigues haciendo?"],
-[2,"Valores y creencias","¿Qué es lo que más te cuesta perdonar?"],
-[2,"Valores y creencias","¿Qué opinión tuya te ha costado gente?"],
-[2,"Infancia y raíces","¿Qué te faltó de niño que ahora buscas de adulto?"],
-[2,"Infancia y raíces","¿Qué te enseñaron en tu casa que tuviste que desaprender?"],
-[2,"Infancia y raíces","¿Cómo eras a los 15 y qué le dirías hoy a ese?"],
-[2,"Infancia y raíces","¿Qué recuerdo de tu infancia entiendes distinto ahora?"],
-[2,"Futuro","¿Qué te da miedo que no pase en tu vida?"],
-[2,"Futuro","¿Qué estás postergando y sabes que tienes que hacer?"],
-[2,"Futuro","¿Cómo quieres que sea tu vida a los 60?"],
-[2,"Miedos e inseguridades","¿Cuál es la conversación que estás evitando?"],
-[2,"Valores y creencias","¿Qué te hace sentir orgulloso de ti y casi nunca dices?"],
-[2,"Miedos e inseguridades","¿Cuándo fue la última vez que lloraste y por qué?"],
-[2,"Trabajo y ambición","¿Qué parte de ti escondes en el trabajo?"],
-[2,"Relaciones","¿Qué necesitas escuchar hoy?"],
-[2,"Miedos e inseguridades","¿Qué te agota de ser tú?"],
-[2,"Valores y creencias","¿Qué haces cuando nadie te ve?"],
-[3,"Miedos e inseguridades","¿Cuál ha sido el momento más solo de tu vida?"],
-[3,"Arrepentimientos","¿Qué es lo que más te avergüenza haber hecho?"],
-[3,"Relaciones","¿A quién no has perdonado y por qué?"],
-[3,"Relaciones","¿Qué le dirías hoy a la persona que más te ha dolido?"],
-[3,"Miedos e inseguridades","¿Qué parte de ti crees que nadie ha visto nunca?"],
-[3,"Miedos e inseguridades","¿Qué es lo que más miedo te da de ti mismo?"],
-[3,"Arrepentimientos","¿Qué te falta perdonarte?"],
-[3,"Miedos e inseguridades","¿Cuál es la herida que todavía no ha cerrado?"],
-[3,"Relaciones","¿Qué has hecho por amor de lo que no te sientes orgulloso?"],
-[3,"Arrepentimientos","¿A quién has decepcionado y te sigue pesando?"],
-[3,"Relaciones","¿Qué le ocultas a la gente que más quieres?"],
-[3,"Relaciones","¿Qué es lo que más extrañas de alguien que ya no está?"],
-[3,"Valores y creencias","¿Qué te haría sentir que tu vida valió la pena?"],
-[3,"Valores y creencias","¿Qué es lo más difícil que has tenido que aceptar?"],
-[3,"Infancia y raíces","¿Qué te gustaría que tu papá o tu mamá te hubieran dicho?"],
-[3,"Relaciones","¿Qué le perdonaste a alguien que no merecía perdón?"],
-[3,"Relaciones","¿Cuándo fue la última vez que te sentiste realmente amado?"],
-[3,"Miedos e inseguridades","¿Qué parte de tu historia te cuesta contar?"],
-[3,"Miedos e inseguridades","¿Qué crees que la gente malinterpreta de ti?"],
-[3,"Valores y creencias","¿Qué estás cargando que no te corresponde?"],
-[3,"Relaciones","¿Alguna vez dejaste de querer a alguien de un día para otro? ¿Qué pasó?"],
-[3,"Miedos e inseguridades","¿Qué te repites cuando estás mal contigo?"],
-[3,"Relaciones","¿Qué relación tuya está sostenida por costumbre y no por ganas?"],
-[3,"Arrepentimientos","¿Qué te ha costado más caro: hablar o quedarte callado?"],
-[3,"Trabajo y ambición","¿Qué versión de ti sacrificaste para llegar donde estás?"],
-[3,"Relaciones","¿Qué te da miedo que yo piense de ti?"],
-[3,"Relaciones","¿Qué necesitas de mí que no me has pedido?"],
-[3,"Relaciones","¿Qué fue lo primero que pensaste de mí y cómo cambió?"],
-[3,"Relaciones","¿Qué admiras de mí que nunca me has dicho?"],
-[3,"Relaciones","¿En qué momento pensaste en alejarte de mí?"],
-[3,"Relaciones","¿Qué te gustaría que yo supiera de ti sin tener que explicarlo?"],
-[3,"Relaciones","¿Qué te hace sentir seguro conmigo?"],
-[3,"Miedos e inseguridades","¿Qué duelo no has terminado de vivir?"],
-[3,"Arrepentimientos","¿Qué te reprochas de cómo trataste a alguien?"],
-[3,"Arrepentimientos","¿Cuál ha sido tu momento de mayor vergüenza y qué aprendiste?"]
+[1,1,"Infancia y raíces","¿Cuál es el olor que más te devuelve a tu infancia?",""],
+[2,1,"Infancia y raíces","¿Qué programa o caricatura veías obsesivamente de niño?",""],
+[3,1,"Infancia y raíces","¿Cuál era tu escondite favorito cuando eras chiquito?",""],
+[4,1,"Infancia y raíces","¿Qué comida hacía alguien de tu familia que nadie más ha logrado replicar?",""],
+[5,1,"Infancia y raíces","¿Cuál fue tu primera forma de ganar plata?",""],
+[6,1,"Infancia y raíces","¿Qué juguete recuerdas con más cariño?",""],
+[7,1,"Relaciones","¿Quién fue la primera persona que te hizo sentir realmente escuchado?",""],
+[8,1,"Relaciones","¿Cómo se llamaba tu mejor amigo del colegio y qué fue de él?",""],
+[9,1,"Relaciones","¿Qué haces cuando quieres animar a alguien que quieres?",""],
+[10,1,"Relaciones","¿Prefieres pocos amigos muy cercanos o muchos conocidos?",""],
+[11,1,"Trabajo y ambición","¿Qué parte de tu trabajo harías gratis?",""],
+[12,1,"Trabajo y ambición","¿Cuál ha sido el mejor consejo profesional que te han dado?",""],
+[13,1,"Trabajo y ambición","Si mañana no tuvieras que trabajar por plata, ¿qué harías el lunes?",""],
+[14,1,"Trabajo y ambición","¿Qué habilidad tuya crees que está subvalorada?",""],
+[15,1,"Divertidas","¿Cuál es tu placer culposo que defenderías en público?",""],
+[16,1,"Divertidas","¿Qué canción te sabes completa aunque te dé pena admitirlo?",""],
+[17,1,"Divertidas","Si pudieras tener un talento inútil garantizado, ¿cuál sería?",""],
+[18,1,"Divertidas","¿Cuál es la cosa más rara que has comido?",""],
+[19,1,"Divertidas","¿Qué apodo te han puesto que más te ha gustado?",""],
+[20,1,"Divertidas","¿Cuál es tu teoría conspirativa favorita, aunque no la creas?",""],
+[21,1,"Divertidas","¿Qué serie o película puedes ver mil veces sin cansarte?",""],
+[22,1,"Divertidas","¿Cuál es el peor corte de pelo que has tenido?",""],
+[23,1,"Divertidas","Si tu vida tuviera una canción de entrada, ¿cuál sería?",""],
+[24,1,"Divertidas","¿Cuál es tu muletilla que más repites sin darte cuenta?",""],
+[25,1,"Valores y creencias","¿Qué costumbre o tradición conservarías siempre?",""],
+[26,1,"Valores y creencias","¿Qué te da rabia que la gente normalice?",""],
+[27,1,"Valores y creencias","¿Qué cualidad admiras más en una persona?",""],
+[28,1,"Valores y creencias","¿Prefieres que te digan la verdad incómoda o que te cuiden con silencio?",""],
+[29,1,"Futuro","¿A qué lugar del mundo quieres ir sí o sí antes de morir?",""],
+[30,1,"Futuro","¿Qué te gustaría aprender este año?",""],
+[31,1,"Futuro","¿Cómo te imaginas un día perfecto dentro de 10 años?",""],
+[32,1,"Futuro","¿Qué te gustaría que la gente dijera de ti en una fiesta cuando no estás?",""],
+[33,1,"Divertidas","¿Eres más de mañana o de noche, y cómo se nota?",""],
+[34,1,"Valores y creencias","¿Cuál es tu forma favorita de descansar de verdad?",""],
+[35,1,"Divertidas","¿Qué te hace reír sin falta?",""],
+[36,1,"Divertidas","¿Cuál es la mejor compra que has hecho por menos de 50 mil pesos?",""],
+[37,1,"Divertidas","¿Qué es algo que todos parecen disfrutar y a ti no te gusta?",""],
+[38,1,"Divertidas","¿Cuál es el mejor plan de domingo para ti?",""],
+[39,1,"Divertidas","Si tuvieras que comer un solo plato el resto de tu vida, ¿cuál sería?",""],
+[40,1,"Divertidas","¿Qué es lo primero que haces al despertar?",""],
+[41,1,"Infancia y raíces","¿Cuál es el viaje que más recuerdas y por qué?",""],
+[42,1,"Valores y creencias","¿Qué te calma cuando estás estresado?",""],
+[43,1,"Valores y creencias","¿Qué libro, podcast o video te cambió la forma de ver algo?",""],
+[44,1,"Futuro","¿Qué habilidad práctica te gustaría tener ya dominada?",""],
+[45,1,"Futuro","¿Qué te gustaría hacer más seguido y no haces?",""],
+[46,2,"Miedos e inseguridades","¿Qué es lo que más miedo te da de envejecer?",""],
+[47,2,"Miedos e inseguridades","¿En qué situación te sientes más inseguro?",""],
+[48,2,"Miedos e inseguridades","¿Qué crítica te han hecho que te dolió porque era cierta?",""],
+[49,2,"Miedos e inseguridades","¿De qué te da miedo que la gente se dé cuenta?",""],
+[50,2,"Miedos e inseguridades","¿Qué es lo que más te cuesta pedir?",""],
+[51,2,"Relaciones","¿Con quién de tu familia te gustaría tener una mejor relación?",""],
+[52,2,"Relaciones","¿Qué necesitas de la gente que quieres y casi nunca pides?",""],
+[53,2,"Relaciones","¿Cómo sabes que confías en alguien?",""],
+[54,2,"Relaciones","¿Qué amistad perdiste y todavía extrañas?",""],
+[55,2,"Relaciones","¿Qué patrón repites en tus relaciones?",""],
+[56,2,"Relaciones","¿Cuándo fue la última vez que te sentiste solo estando acompañado?",""],
+[57,2,"Relaciones","Cuando estás dolido, ¿te acercas o te alejas?",""],
+[58,2,"Trabajo y ambición","¿Alguna vez has sentido que estás en el camino equivocado? ¿Cuándo?",""],
+[59,2,"Trabajo y ambición","¿Qué parte de tus logros le debes a la suerte?",""],
+[60,2,"Trabajo y ambición","¿Qué te haría renunciar mañana?",""],
+[61,2,"Trabajo y ambición","¿A quién le tienes envidia sana y por qué?",""],
+[62,2,"Trabajo y ambición","¿Cuál ha sido tu fracaso más útil?",""],
+[63,2,"Arrepentimientos","¿Qué decisión cambiarías si pudieras volver?",""],
+[64,2,"Arrepentimientos","¿A quién le debes una disculpa que nunca diste?",""],
+[65,2,"Arrepentimientos","¿Qué oportunidad dejaste pasar por miedo?",""],
+[66,2,"Arrepentimientos","¿De qué te arrepientes de no haber dicho a tiempo?",""],
+[67,2,"Valores y creencias","¿En qué has cambiado de opinión en los últimos años?",""],
+[68,2,"Valores y creencias","¿Qué mentira te has contado por mucho tiempo?",""],
+[69,2,"Valores y creencias","¿Qué haces que sabes que no está bien y sigues haciendo?",""],
+[70,2,"Valores y creencias","¿Qué es lo que más te cuesta perdonar?",""],
+[71,2,"Valores y creencias","¿Qué opinión tuya te ha costado gente?",""],
+[72,2,"Infancia y raíces","¿Qué te faltó de niño que ahora buscas de adulto?",""],
+[73,2,"Infancia y raíces","¿Qué te enseñaron en tu casa que tuviste que desaprender?",""],
+[74,2,"Infancia y raíces","¿Cómo eras a los 15 y qué le dirías hoy a ese?",""],
+[75,2,"Infancia y raíces","¿Qué recuerdo de tu infancia entiendes distinto ahora?",""],
+[76,2,"Futuro","¿Qué te da miedo que no pase en tu vida?",""],
+[77,2,"Futuro","¿Qué estás postergando y sabes que tienes que hacer?",""],
+[78,2,"Futuro","¿Cómo quieres que sea tu vida a los 60?",""],
+[79,2,"Miedos e inseguridades","¿Cuál es la conversación que estás evitando?",""],
+[80,2,"Valores y creencias","¿Qué te hace sentir orgulloso de ti y casi nunca dices?",""],
+[81,2,"Miedos e inseguridades","¿Cuándo fue la última vez que lloraste y por qué?",""],
+[82,2,"Trabajo y ambición","¿Qué parte de ti escondes en el trabajo?",""],
+[83,2,"Relaciones","¿Qué necesitas escuchar hoy?",""],
+[84,2,"Miedos e inseguridades","¿Qué te agota de ser tú?",""],
+[85,2,"Valores y creencias","¿Qué haces cuando nadie te ve?",""],
+[86,3,"Miedos e inseguridades","¿Cuál ha sido el momento más solo de tu vida?",""],
+[87,3,"Arrepentimientos","¿Qué es lo que más te avergüenza haber hecho?",""],
+[88,3,"Relaciones","¿A quién no has perdonado y por qué?",""],
+[89,3,"Relaciones","¿Qué le dirías hoy a la persona que más te ha dolido?",""],
+[90,3,"Miedos e inseguridades","¿Qué parte de ti crees que nadie ha visto nunca?",""],
+[91,3,"Miedos e inseguridades","¿Qué es lo que más miedo te da de ti mismo?",""],
+[92,3,"Arrepentimientos","¿Qué te falta perdonarte?",""],
+[93,3,"Miedos e inseguridades","¿Cuál es la herida que todavía no ha cerrado?",""],
+[94,3,"Relaciones","¿Qué has hecho por amor de lo que no te sientes orgulloso?",""],
+[95,3,"Arrepentimientos","¿A quién has decepcionado y te sigue pesando?",""],
+[96,3,"Relaciones","¿Qué le ocultas a la gente que más quieres?",""],
+[97,3,"Relaciones","¿Qué es lo que más extrañas de alguien que ya no está?","Puede tocar duelo. Revisar antes de activar en contextos públicos."],
+[98,3,"Valores y creencias","¿Qué te haría sentir que tu vida valió la pena?",""],
+[99,3,"Valores y creencias","¿Qué es lo más difícil que has tenido que aceptar?",""],
+[100,3,"Infancia y raíces","¿Qué te gustaría que tu papá o tu mamá te hubieran dicho?",""],
+[101,3,"Relaciones","¿Qué le perdonaste a alguien que no merecía perdón?",""],
+[102,3,"Relaciones","¿Cuándo fue la última vez que te sentiste realmente amado?",""],
+[103,3,"Miedos e inseguridades","¿Qué parte de tu historia te cuesta contar?",""],
+[104,3,"Miedos e inseguridades","¿Qué crees que la gente malinterpreta de ti?",""],
+[105,3,"Valores y creencias","¿Qué estás cargando que no te corresponde?",""],
+[106,3,"Relaciones","¿Alguna vez dejaste de querer a alguien de un día para otro? ¿Qué pasó?",""],
+[107,3,"Miedos e inseguridades","¿Qué te repites cuando estás mal contigo?",""],
+[108,3,"Relaciones","¿Qué relación tuya está sostenida por costumbre y no por ganas?",""],
+[109,3,"Arrepentimientos","¿Qué te ha costado más caro: hablar o quedarte callado?",""],
+[110,3,"Trabajo y ambición","¿Qué versión de ti sacrificaste para llegar donde estás?",""],
+[111,3,"Relaciones","¿Qué te da miedo que yo piense de ti?",""],
+[112,3,"Relaciones","¿Qué necesitas de mí que no me has pedido?",""],
+[113,3,"Relaciones","¿Qué fue lo primero que pensaste de mí y cómo cambió?",""],
+[114,3,"Relaciones","¿Qué admiras de mí que nunca me has dicho?",""],
+[115,3,"Relaciones","¿En qué momento pensaste en alejarte de mí?",""],
+[116,3,"Relaciones","¿Qué te gustaría que yo supiera de ti sin tener que explicarlo?",""],
+[117,3,"Relaciones","¿Qué te hace sentir seguro conmigo?",""],
+[118,3,"Miedos e inseguridades","¿Qué duelo no has terminado de vivir?","Sensible. Considerar desactivar para partidas entre desconocidos."],
+[119,3,"Arrepentimientos","¿Qué te reprochas de cómo trataste a alguien?",""],
+[120,3,"Arrepentimientos","¿Cuál ha sido tu momento de mayor vergüenza y qué aprendiste?",""],
+[121,3,"Relaciones","¿Qué es lo que más te gusta que te hagan en la cama?","Picante directa. Clásica para abrir el tema. Solo con consentimiento y confianza previa; ideal cuando el juego ya está avanzado."],
+[122,3,"Relaciones","¿Qué te enciende de inmediato: una palabra, un gesto o un tipo de contacto?","Picante suave dentro del nivel 3; buena para empezar la ronda íntima. Revela el 'mapa' de deseo de la otra persona."],
+[123,3,"Relaciones","¿Qué parte de tu cuerpo es tu punto débil cuando te tocan?","Picante sensorial y juguetona. Funciona muy bien por chat porque deja la imaginación trabajando."],
+[124,3,"Relaciones","¿Qué es lo más atrevido que has hecho en la intimidad?","Picante narrativa: invita a contar una historia, no solo a responder. Puede tocar experiencias con ex; moderar con humor."],
+[125,3,"Relaciones","¿Hay algo que siempre has querido probar en la cama y no te has atrevido a pedir?","Picante de deseo no expresado. La respuesta es un inicio de conversación, no un compromiso: seguir con '¿cuéntame más?'."],
+[126,3,"Relaciones","En la intimidad, ¿qué pesa más para ti: la conexión emocional o la química física?","Picante reflexiva. Revela valores sobre el deseo y cómo la persona vive la intimidad, no solo qué le gusta."],
+[127,3,"Relaciones","¿Cuál ha sido tu mejor momento íntimo y qué lo hizo tan especial?","Picante + profunda: mezcla deseo con memoria emocional. Cuidado si involucra a un ex reciente."],
+[128,3,"Relaciones","¿Prefieres tomar la iniciativa en la cama o que la tomen contigo? ¿Por qué?","Picante de dinámica y roles. El '¿por qué?' es la parte valiosa: pedir siempre la explicación, no solo la preferencia."],
+[129,3,"Relaciones","¿Cómo te gusta el 'después': abrazos, conversar, dormir… o repetir?","Picante tierna para cerrar la ronda íntima. Baja la intensidad con humor y revela el estilo de afecto de la persona."],
+[130,3,"Relaciones","¿Cuál es una fantasía que nunca has confesado pero te encantaría cumplir?","Picante de vulnerabilidad alta. Genera mucha conexión si ambos responden. No presionar si la persona duda."],
+[133,1,"Divertidas","¿Cuándo fue la última vez que cantaste a todo pulmón? ¿Solo o con alguien?","Aron #5. Suele sacar risa compartida, que acelera la apertura (Gray, Parkinson & Dunbar, 2015)."],
+[134,1,"Divertidas","¿Qué es lo más espontáneo o loco que has hecho en tu vida?","Basada en el modelo de autoexpansión de Aron: lo novedoso y emocionante genera atracción."],
+[135,1,"Divertidas","¿Cómo sería tu día perfecto, de principio a fin?","Aron #4. Revela valores y estilo de vida sin sonar a entrevista."],
+[136,1,"Valores y creencias","¿Cuál ha sido el mejor día de este año hasta ahora y qué lo hizo tan bueno?","Emoción positiva + narrativa. Ideal para arrancar la partida con buen ánimo."],
+[137,1,"Divertidas","Cuéntame la historia más ridícula o chistosa que te haya pasado en una cita.","Risa compartida = más disposición a abrirse (Oxford, 2015). Toca el tema 'citas' sin presión."],
+[138,1,"Valores y creencias","¿Por qué tres cosas te sientes agradecido hoy?","Adaptación de Aron. La gratitud expresada eleva la calidez percibida del otro."],
+[139,1,"Divertidas","Si nos escapáramos un fin de semana mañana, ¿a dónde iríamos y qué haríamos?","Pregunta 'nosotros' suave: imaginar planes juntos crea realidad compartida y coqueteo ligero."],
+[140,1,"Relaciones","¿Qué tres cosas crees que tenemos en común?","Aron #8. La similitud percibida es de los predictores más fuertes de agrado inicial."],
+[141,2,"Relaciones","¿Qué es lo primero que te atrae de una persona, más allá del físico?","Puente coqueto: abre el tema de la atracción sin llegar a lo sexual."],
+[142,1,"Trabajo y ambición","¿Qué actividad te hace perder por completo la noción del tiempo?","Pregunta de 'flow' (Csikszentmihalyi): revela pasión sin preguntar '¿a qué te dedicas?'."],
+[143,1,"Divertidas","Si pudieras invitar a cenar a cualquier persona del mundo, viva o muerta, ¿a quién invitarías y qué le preguntarías?","Pregunta #1 del estudio de las 36 preguntas de Aron. Abre imaginación sin exigir vulnerabilidad."],
+[144,1,"Divertidas","¿Te gustaría ser famoso? ¿En qué te gustaría destacar?","Clásica de Aron (#2). Revela ambiciones y ego de forma ligera."],
+[145,2,"Relaciones","¿Cómo fue tu primer beso?","Coqueta narrativa: casi siempre saca una historia tierna o cómica. Sube la temperatura suavemente."],
+[146,2,"Relaciones","¿Qué te hace sentir realmente valorado en una relación?","La intimidad nace de sentir que el otro responde a lo que uno revela (Laurenceau, 1998)."],
+[147,2,"Valores y creencias","¿Cuál es tu innegociable en el amor?","Compatibilidad de valores: clave para que la conexión dure más allá de la primera cita."],
+[148,2,"Valores y creencias","¿Crees en el amor a primera vista o en el que se construye poco a poco?","Inspirada en Aron. Revela la teoría del amor de la persona y genera debate sabroso."],
+[149,2,"Relaciones","¿Qué aprendiste de tu última relación que cambió tu forma de querer?","Puede tocar al ex: mantener tono curioso, no interrogatorio. Revela madurez emocional."],
+[150,2,"Relaciones","¿Cuándo fue la última vez que sentiste mariposas por alguien?","Coqueta: invita a hablar de enamoramiento sin exigir detalles. Puede abrir la puerta al 'aquí y ahora'."],
+[151,2,"Relaciones","¿Cómo sería tu cita perfecta, sin límite de presupuesto ni de tiempo?","Coqueta + imaginación. Da ideas concretas para una segunda cita (autoexpansión: planes novedosos unen)."],
+[152,2,"Relaciones","¿Qué fue lo primero que notaste de mí?","Pregunta 'nosotros' de nivel medio: trae la conversación al aquí y ahora, estilo set 3 de Aron."],
+[153,2,"Futuro","¿Hay algo que sueñas con hacer hace mucho tiempo? ¿Qué te ha detenido?","Aron #12. La segunda parte ('¿qué te detiene?') es donde aparece la vulnerabilidad."],
+[154,2,"Relaciones","Hasta ahora, ¿qué ha sido lo mejor de esta conversación?","Aquí-y-ahora (Aron set 3). Refuerza lo que está funcionando y valida al otro en tiempo real."],
+[155,3,"Arrepentimientos","Si esta noche murieras sin poder hablar con nadie, ¿qué te quedaría sin decir y a quién?","Aron #33, de las más poderosas del estudio. Sensible: usar cuando ya hay confianza en la ronda."],
+[156,3,"Relaciones","Completa la frase: “Ojalá tuviera alguien con quien compartir…”","Aron #26. Revela el vacío afectivo que la persona quiere llenar; muy potente en primeras citas."],
+[157,3,"Valores y creencias","Si solo pudieras conservar un recuerdo de toda tu vida, ¿cuál salvarías?","Inspirada en Aron #17-18. Autodivulgación emocional, la que más intimidad genera (Laurenceau, 1998)."],
+[158,3,"Relaciones","¿Qué significa para ti la intimidad, más allá del sexo?","Puente ideal entre las profundas y las picantes: baja la guardia antes de subir la temperatura."],
+[159,3,"Relaciones","¿Qué te hace sentir deseado de verdad?","Picante emocional: mezcla deseo con vulnerabilidad. Buena entrada a la ronda picante."],
+[160,3,"Relaciones","¿Qué canción pondrías de fondo para un momento íntimo?","Picante juguetona y de baja presión: coquetea sin exigir confesiones. Ideal para cerrar la ronda con humor."],
+[161,3,"Relaciones","¿Prefieres una seducción lenta o que vayan directo al grano? ¿Por qué?","Picante media, juguetona. El '¿por qué?' invita a la historia detrás de la preferencia."],
+[162,2,"Relaciones","¿Cómo demuestras cariño cuando alguien te gusta de verdad?","Revela el 'lenguaje del amor' de la persona. Puente coqueto sin presión."]
 ];
 
+const CFG={
+  perPlayer:35,
+  levelDistribution:[0.40,0.35,0.25],
+  maxSameCategory:3,
+  comicReliefAfter:2,
+  minDivertidas:2,
+  nosotrosFrom:5,
+  sensitiveDefault:false,
+  historyTtlDays:90
+};
+const SESSION_LEN=CFG.perPlayer*2;
 const PTS={1:[5,-2],2:[10,-5],3:[20,-10]};
 const LVL={1:{name:"I · Susurro",ga:"var(--l1a)",gb:"var(--l1b)"},2:{name:"II · Confesión",ga:"var(--l2a)",gb:"var(--l2b)"},3:{name:"III · Revelación",ga:"var(--l3a)",gb:"var(--l3b)"}};
 const CATEMOJI={"Infancia y raíces":"🌱","Relaciones":"💞","Trabajo y ambición":"💼","Miedos e inseguridades":"🌑","Valores y creencias":"🧭","Divertidas":"🎉","Futuro":"🔮","Arrepentimientos":"🕯️"};
-const KEY="juego-cartas-v1";
+const KEY="juego-mistica-v2";
+const HIST_KEY="juego-mistica-pairs";
+const QIDX={};QUESTIONS.forEach((q,i)=>QIDX[q[0]]=i);
+const CLOSING_CATS=new Set(["Divertidas","Relaciones","Valores y creencias","Futuro"]);
+const HEAVY_CLOSING_CATS=new Set(["Arrepentimientos","Miedos e inseguridades"]);
+
+function qLvl(q){return q[1]}
+function qCat(q){return q[2]}
+function qText(q){return q[3]}
+function qNotes(q){return q[4]||""}
+function isPicante(q){return /picante/i.test(qNotes(q))}
+function isSensible(q){return /sensible/i.test(qNotes(q))}
+function isNosotros(q){
+  const n=qNotes(q).toLowerCase(), t=qText(q).toLowerCase();
+  if(/nosotros|aquí-y-ahora|aquí y ahora/.test(n))return true;
+  return /\bde mí\b|\bconmigo\b|\bnos escap|\besta conversación\b|\btenemos en común\b/.test(t);
+}
+function isPositiveClose(q){
+  if(qLvl(q)>2)return false;
+  if(HEAVY_CLOSING_CATS.has(qCat(q)))return false;
+  if(isSensible(q))return false;
+  return CLOSING_CATS.has(qCat(q))||/positiv|risa|gratitud|mejor.*conversación|día perfecto|reír/i.test(qNotes(q)+qText(q));
+}
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
 function clearSave(){try{localStorage.removeItem(KEY)}catch(e){}}
+function pairKey(){const n=S.players.map(p=>p.name.trim().toLowerCase()).sort();return n.join("|")}
+function loadPairHist(){try{const all=JSON.parse(localStorage.getItem(HIST_KEY)||"{}");const e=all[pairKey()];if(!e)return new Set();if(Date.now()-e.t>CFG.historyTtlDays*864e5)return new Set();return new Set(e.codes||[])}catch(e){return new Set()}}
+function savePairHist(codes){try{const all=JSON.parse(localStorage.getItem(HIST_KEY)||"{}");all[pairKey()]={t:Date.now(),codes:[...codes]};localStorage.setItem(HIST_KEY,JSON.stringify(all))}catch(e){}}
 
-function newState(){return{phase:"setup",sub:"choice",round:1,turn:0,used:[],cur:null,last:null,
-  players:[mkPlayer(""),mkPlayer("")]}}
+function newState(){return{phase:"setup",sub:"choice",round:1,turn:0,queue:[],qIdx:0,cur:null,last:null,
+  spicyGateDone:false,spicyVotes:[null,null],spicy:false,sensitive:CFG.sensitiveDefault,
+  consecSkipsL3:0,consecL3:0,catCounts:{},divertidas:0,plan:[],comicSlots:new Set(),
+  players:[mkPlayer(""),mkPlayer("")]}};
 function mkPlayer(name){return{name:name,score:0,ans:0,sk:0,lv:{1:[0,0],2:[0,0],3:[0,0]},cat:{}}}
-let S=newState();
-let pendingResume=null;
+let S=newState();let pendingResume=null;
 
-function weights(r){if(r<=3)return[1,0,0];if(r<=6)return[.6,.4,0];if(r<=9)return[.2,.5,.3];return[.1,.4,.5]}
-function availableByLevel(){const a={1:[],2:[],3:[]};QUESTIONS.forEach((q,i)=>{if(!S.used.includes(i))a[q[0]].push(i)});return a}
-function pickQuestion(){
-  const avail=availableByLevel();
-  let w=weights(S.round).slice();
-  for(let l=1;l<=3;l++)if(!avail[l].length)w[l-1]=0;
-  const tot=w[0]+w[1]+w[2];
-  if(tot===0)return null;
-  let r=Math.random()*tot,lvl=3;
-  for(let l=1;l<=3;l++){if(r<w[l-1]){lvl=l;break}r-=w[l-1]}
-  const pool=avail[lvl];
-  const idx=pool[Math.floor(Math.random()*pool.length)];
-  S.used.push(idx);
-  return idx;
+function buildLevelPlan(len){
+  const t=CFG.levelDistribution.map(p=>Math.round(len*p));
+  while(t[0]+t[1]+t[2]>len)t[t.indexOf(Math.max(...t))]--;
+  while(t[0]+t[1]+t[2]<len)t[t.indexOf(Math.min(...t))]++;
+  t[0]=Math.max(t[0],2);
+  const plan=[1,1]; const counts={1:2,2:0,3:0}; let last=1,consec3=0; const comic=new Set();
+  for(let i=2;i<len;i++){
+    const rem=len-i, need={1:t[0]-counts[1],2:t[1]-counts[2],3:t[2]-counts[3]};
+    if(consec3>=CFG.comicReliefAfter && need[1]>0){
+      plan.push(1);counts[1]++;comic.add(i);consec3=0;last=1;continue;
+    }
+    if(i===len-1){
+      const pick=need[1]>0?1:need[2]>0?2:1;plan.push(pick);counts[pick]++;continue;
+    }
+    let opts=[];
+    for(let l=1;l<=3;l++) if(need[l]>0 && l>=last-1) opts.push(l);
+    if(!opts.length) for(let l=1;l<=3;l++) if(need[l]>0) opts.push(l);
+    let chosen=opts.includes(last+1)&&last<3?last+1:opts.includes(last)?last:opts[opts.length-1];
+    if(rem<=need[3]&&need[3]>0&&opts.includes(3)) chosen=3;
+    if(rem<=need[2]+need[3]&&need[2]>0&&chosen<2&&opts.includes(2)) chosen=2;
+    plan.push(chosen);counts[chosen]++;
+    consec3=chosen===3?consec3+1:0;last=chosen;
+  }
+  S.plan=plan;S.comicSlots=comic;return plan;
 }
 
-const app=document.getElementById("app");
-const G={};
-window.G=G;
+function poolForSlot(slotIdx,targetLvl,opts={}){
+  const used=new Set(S.queue.filter(x=>x!=null));
+  const lastCat=slotIdx>0&&S.queue[slotIdx-1]!=null?qCat(QUESTIONS[S.queue[slotIdx-1]]):null;
+  const pairHist=opts.pairHist||loadPairHist();
+  const needComic=S.comicSlots.has(slotIdx);
+  const needClose=slotIdx===SESSION_LEN-1;
+  const nosotrosOk=slotIdx>=CFG.nosotrosFrom;
+  const allowPicante=S.spicy===true;
+  const allowSensitive=S.sensitive===true;
+
+  function ok(i){
+    const q=QUESTIONS[i];
+    if(used.has(i))return false;
+    if(qLvl(q)!==targetLvl)return false;
+    if(isSensible(q)&&!allowSensitive)return false;
+    if(isPicante(q)&&!allowPicante)return false;
+    if(!nosotrosOk&&isNosotros(q))return false;
+    if(lastCat&&qCat(q)===lastCat)return false;
+    if((S.catCounts[qCat(q)]||0)>=CFG.maxSameCategory)return false;
+    if(pairHist.has(q[0]))return false;
+    if(needComic&&qCat(q)!=="Divertidas")return false;
+    if(needClose&&!isPositiveClose(q))return false;
+    return true;
+  }
+
+  let pool=QUESTIONS.map((_,i)=>i).filter(ok);
+  const relax=[
+    ()=>pool=QUESTIONS.map((_,i)=>i).filter(i=>{const q=QUESTIONS[i];if(used.has(i)||qLvl(q)!==targetLvl)return false;if(isSensible(q)&&!allowSensitive)return false;if(isPicante(q)&&!allowPicante)return false;if(!nosotrosOk&&isNosotros(q))return false;if(needComic&&qCat(q)!=="Divertidas")return false;if(needClose&&!isPositiveClose(q))return false;return true}),
+    ()=>pool=QUESTIONS.map((_,i)=>i).filter(i=>{const q=QUESTIONS[i];if(used.has(i)||qLvl(q)!==targetLvl)return false;if(isSensible(q)&&!allowSensitive)return false;if(isPicante(q)&&!allowPicante)return false;if(needComic&&qCat(q)!=="Divertidas")return false;if(needClose&&!isPositiveClose(q))return false;return true}),
+    ()=>pool=QUESTIONS.map((_,i)=>i).filter(i=>{const q=QUESTIONS[i];if(used.has(i))return false;if(Math.abs(qLvl(q)-targetLvl)>1)return false;if(isSensible(q)&&!allowSensitive)return false;if(isPicante(q)&&!allowPicante)return false;return true}),
+    ()=>pool=QUESTIONS.map((_,i)=>i).filter(i=>!used.has(i)&&(!isSensible(i)||allowSensitive)&&(!isPicante(QUESTIONS[i])||allowPicante)),
+  ];
+  for(const fn of relax){if(pool.length)break;fn()}
+  return pool;
+}
+
+function weightedPick(pool){
+  if(!pool.length)return null;
+  const w=pool.map(()=>1);
+  const tot=w.reduce((a,b)=>a+b,0); let r=Math.random()*tot;
+  for(let j=0;j<pool.length;j++){if(r<w[j])return pool[j];r-=w[j]}
+  return pool[pool.length-1];
+}
+
+function trackPick(idx){
+  const cat=qCat(QUESTIONS[idx]);
+  S.catCounts[cat]=(S.catCounts[cat]||0)+1;
+  if(cat==="Divertidas") S.divertidas++;
+}
+function untrackPick(idx){
+  if(idx==null)return;
+  const cat=qCat(QUESTIONS[idx]);
+  if(S.catCounts[cat]) S.catCounts[cat]--;
+  if(cat==="Divertidas"&&S.divertidas>0) S.divertidas--;
+}
+
+function fillSlot(i){
+  if(S.queue[i]!=null) return S.queue[i];
+  let lvl=S.plan[i]; let idx=null;
+  for(let attempt=0;attempt<8&&!idx;attempt++){
+    const pool=poolForSlot(i,lvl,{pairHist:loadPairHist()});
+    idx=weightedPick(pool);
+    if(!idx&&attempt===3) lvl=Math.max(1,lvl-1);
+    if(!idx&&attempt===5) lvl=Math.min(3,lvl+1);
+  }
+  if(idx==null) return null;
+  S.queue[i]=idx; trackPick(idx); return idx;
+}
+
+function prepareSession(){
+  S.queue=new Array(SESSION_LEN).fill(null);
+  S.catCounts={}; S.divertidas=0;
+  buildLevelPlan(SESSION_LEN);
+  for(let i=0;i<Math.min(3,SESSION_LEN);i++){
+    if(!fillSlot(i)) return false;
+  }
+  if(S.divertidas<1){
+    const rep=poolForSlot(2,1,{pairHist:loadPairHist()}).filter(j=>qCat(QUESTIONS[j])==="Divertidas")[0];
+    if(rep!=null){S.queue[2]=rep; S.catCounts["Divertidas"]=(S.catCounts["Divertidas"]||0)+1}
+  }
+  return true;
+}
+
+function replaceCurrentQuestion(){
+  const slot=S.qIdx, lvl=qLvl(QUESTIONS[S.cur]);
+  untrackPick(S.queue[slot]); S.queue[slot]=null;
+  const pool=poolForSlot(slot,lvl,{pairHist:loadPairHist()});
+  const idx=weightedPick(pool);
+  if(idx==null)return false;
+  S.queue[slot]=idx; trackPick(idx); S.cur=idx; return true;
+}
+
+function currentQuestionDone(){
+  const c=QUESTIONS[S.cur][0];
+  const hist=loadPairHist(); hist.add(c); savePairHist(hist);
+}
+
+function cardsPlayed(){return S.qIdx}
+function cardsTotal(){return SESSION_LEN}
+function playerQuestionsDone(){return Math.floor(S.qIdx/2)}
+function needsSpicyGate(){
+  if(S.spicyGateDone)return false;
+  for(let i=S.qIdx;i<SESSION_LEN;i++) if(S.plan[i]===3) return true;
+  return false;
+}
+
+const app=document.getElementById("app"); const G={}; window.G=G;
 
 function turnChip(){const p=S.players[S.turn];return `<span class="chip turn${S.turn+1}"><span class="dot" style="background:var(--p${S.turn+1})"></span>Turno de ${esc(p.name)}</span>`}
-function topbar(){return `<div class="topbar"><span class="chip">Ronda ${S.round}</span>${turnChip()}<button class="linkbtn" id="btn-end" onclick="G.askEnd()">Terminar</button></div>`}
+function topbar(){
+  const pp=playerQuestionsDone();
+  return `<div class="topbar"><span class="chip">Ronda ${S.round}</span><span class="chip">${pp}/${CFG.perPlayer} c/u</span>${turnChip()}<button class="linkbtn" id="btn-end" onclick="G.askEnd()">Terminar</button></div>`;
+}
 
-/* ---------- screens ---------- */
-function renderSetup(){
+function renderSetupInvalid(){
   app.innerHTML=`<div class="screen"><div class="hero">
     <div class="logo">🔮</div>
-    <h1>Mística</h1>
+    <h1>Link inválido</h1>
+    <p>Este juego necesita un link de invitación personalizado. Pídele a ${esc(HOST_NAME)} que te comparta uno.</p>
+  </div></div>`;
+}
+
+function renderSetup(){
+  if(!guestName){renderSetupInvalid();return}
+  app.innerHTML=`<div class="screen"><div class="hero">
+    <div class="logo">🔮</div>
+    <h1><span style="color:var(--p1)">${esc(guestName)}</span> y ${esc(HOST_NAME)}</h1>
     <p>Las cartas revelan lo que rara vez se dice en voz alta. Se rotan el celular: responde y gana puntos… o pasa la carta y piérdelos.</p>
   </div>
   <div class="warning">
     <div class="warn-title">⚠️ Aviso antes de abrir el mazo</div>
-    <p>Las preguntas suben de intensidad conforme avanzan las rondas. Pueden aparecer en tres niveles: <strong>suaves</strong>, <strong>personales</strong> y <strong>profundas</strong> — incluyendo temas sobre vuestra relación, miedos, arrepentimientos y emociones difíciles.</p>
-    <p class="cats">Categorías del mazo: <strong>🌱 Infancia y raíces</strong> · <strong>💞 Relaciones</strong> · <strong>💼 Trabajo y ambición</strong> · <strong>🌑 Miedos e inseguridades</strong> · <strong>🧭 Valores y creencias</strong> · <strong>🎉 Divertidas</strong> · <strong>🔮 Futuro</strong> · <strong>🕯️ Arrepentimientos</strong></p>
-    <p>Solo jueguen si hay confianza mutua y pueden decir «paso» en cualquier carta (perderán puntos). Nadie está obligado a responder nada.</p>
+    <p>Partida de <strong>${CFG.perPlayer} preguntas por jugador</strong> (${SESSION_LEN} cartas). Las preguntas suben de intensidad con un arco cuidado: <strong>suaves → personales → profundas</strong>, con respiros de risa intercalados.</p>
+    <p class="cats">Categorías: <strong>🌱 Infancia</strong> · <strong>💞 Relaciones</strong> · <strong>💼 Trabajo</strong> · <strong>🌑 Miedos</strong> · <strong>🧭 Valores</strong> · <strong>🎉 Divertidas</strong> · <strong>🔮 Futuro</strong> · <strong>🕯️ Arrepentimientos</strong></p>
+    <p>Antes de las preguntas profundas, ambos decidirán si activan el <strong>modo picante 🌶️</strong> (opcional). Siempre pueden pasar una carta.</p>
   </div>
   <div class="stack">
-    <div class="field"><label for="p1name"><span class="dot" style="background:var(--p1)"></span>Jugador 1</label><input id="p1name" maxlength="18" placeholder="Nombre" autocomplete="off"/></div>
-    <div class="field"><label for="p2name"><span class="dot" style="background:var(--p2)"></span>Jugador 2</label><input id="p2name" maxlength="18" placeholder="Nombre" autocomplete="off"/></div>
     <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" id="btn-start" onclick="G.start()">Revelar el mazo ✨</button>
     <p class="center">Susurro +5/−2 · Confesión +10/−5 · Revelación +20/−10</p>
   </div></div>`;
@@ -336,10 +536,29 @@ function renderResume(st){
   const [a,b]=st.players;
   app.innerHTML=`<div class="screen"><div class="hero">
     <div class="logo">🔮</div><h1>Partida en curso</h1>
-    <p>Ronda ${st.round} — ${esc(a.name)} ${a.score} pts vs ${esc(b.name)} ${b.score} pts</p></div>
+    <p>Carta ${st.qIdx+1}/${SESSION_LEN} — ${esc(a.name)} ${a.score} pts vs ${esc(b.name)} ${b.score} pts</p></div>
   <div class="stack">
     <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" id="btn-resume" onclick="G.resume()">Continuar partida ▶️</button>
     <button class="btn btn-ghost" id="btn-fresh" onclick="G.fresh()">Nueva partida</button>
+  </div></div>`;
+}
+
+function renderSpicyGate(){
+  const p=S.players[S.turn];
+  const done=S.spicyVotes.every(v=>v!==null);
+  if(done){
+    S.spicy=S.spicyVotes[0]&&S.spicyVotes[1]; S.spicyGateDone=true;
+    S.phase="handoff"; save(); renderHandoff(); return;
+  }
+  app.innerHTML=`<div class="screen"><div class="handoff">
+    <div class="big">🌶️</div>
+    <h2>Modo picante</h2>
+    <p>Las próximas cartas pueden incluir preguntas más atrevidas. Ambos deben aceptar.</p>
+    <p style="color:var(--gold);font-weight:700">${esc(p.name)}, ¿activamos modo picante?</p>
+    <div class="stack" style="max-width:320px;width:100%">
+      <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" onclick="G.spicyVote(true)">Sí 🌶️</button>
+      <button class="btn btn-ghost" onclick="G.spicyVote(false)">No, gracias</button>
+    </div>
   </div></div>`;
 }
 
@@ -351,29 +570,29 @@ function renderHandoff(){
     ${banner}
     <div class="big">📲</div>
     <h2>Pásale el celular a<br/><span style="color:var(--p${S.turn+1})">${esc(p.name)}</span></h2>
-    <p>Que nadie más mire 👀 — Ronda ${S.round}</p>
+    <p>Carta ${S.qIdx+1} de ${SESSION_LEN} · Ronda ${S.round}</p>
     <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea;max-width:320px" id="btn-ready" onclick="G.ready()">Soy ${esc(p.name)}, estoy listo/a ✋</button>
   </div></div>`;
 }
 
 function renderQuestion(){
-  const q=QUESTIONS[S.cur],lvl=LVL[q[0]],[win,lose]=PTS[q[0]];
-  const chips=`<div class="chips"><span class="lvlchip">${lvl.name}</span><span class="catchip">${CATEMOJI[q[1]]||""} ${esc(q[1])}</span></div>`;
+  const q=QUESTIONS[S.cur],lvl=LVL[qLvl(q)],[win,lose]=PTS[qLvl(q)];
+  const chips=`<div class="chips"><span class="lvlchip">${lvl.name}</span><span class="catchip">${CATEMOJI[qCat(q)]||""} ${esc(qCat(q))}</span></div>`;
   let body="";
   if(S.sub==="choice"){
     body=`<div class="card" style="--ga:${lvl.ga};--gb:${lvl.gb}">${chips}
-      <div class="q">${esc(q[2])}</div>
+      <div class="q">${esc(qText(q))}</div>
       <div class="vals"><span class="gain">✓ Responder +${win}</span><span class="loss">✗ Pasar ${lose}</span></div>
     </div>
     <div class="stack">
       <button class="btn btn-grad" style="--ga:${lvl.ga};--gb:${lvl.gb}" id="btn-answer" onclick="G.answer()">Responder&nbsp;<small>+${win}</small></button>
-      <button class="btn btn-danger" id="btn-skip" onclick="G.skip()">No responder&nbsp;<small>${lose}</small></button>
+      <button class="btn btn-danger" id="btn-skip" onclick="G.skip()">Paso&nbsp;<small>${lose}</small></button>
       <button class="btn btn-ghost" id="btn-points" onclick="G.points()">📊 Ver puntos</button>
     </div>`;
   }else if(S.sub==="answer"){
     body=`<div class="card" style="--ga:${lvl.ga};--gb:${lvl.gb}">${chips}
       <div class="bigicon">🗣️</div>
-      <div class="q">${esc(q[2])}</div>
+      <div class="q" >${esc(qText(q))}</div>
       <p class="subtxt">Respóndela en voz alta, sin afán. Cuando termines, confirma para ganar tus puntos.</p>
     </div>
     <div class="stack">
@@ -383,8 +602,8 @@ function renderQuestion(){
   }else{
     body=`<div class="card" style="--ga:${lvl.ga};--gb:${lvl.gb}">${chips}
       <div class="bigicon">😬</div>
-      <div class="q">¿Seguro que pasas?</div>
-      <p class="subtxt">Perderás ${Math.abs(lose)} puntos y la pregunta se descarta para siempre.</p>
+      <div class="q" >¿Seguro que pasas?</div>
+      <p class="subtxt">Perderás ${Math.abs(lose)} puntos. Te repone otra carta del mismo nivel.</p>
     </div>
     <div class="stack">
       <button class="btn btn-danger" id="btn-confirm-skip" onclick="G.confirmSkip()">Sí, paso&nbsp;<small>${lose}</small></button>
@@ -411,14 +630,13 @@ function renderEnd(auto){
   app.innerHTML=`<canvas class="confetti" id="cv"></canvas><div class="screen"><div class="end">
     <div class="crown">${crown}</div>
     <h2>${title}</h2>
-    <p class="sub">${auto?"¡Se acabaron las preguntas! ":""}Jugaron ${S.used.length} carta${S.used.length!==1?"s":""} en ${Math.max(1,S.round-(S.turn===0?1:0))} ronda${Math.max(1,S.round-(S.turn===0?1:0))!==1?"s":""}.</p>
+    <p class="sub">${auto?"¡Completaron las 70 cartas! ":""}${S.qIdx} carta${S.qIdx!==1?"s":""} jugada${S.qIdx!==1?"s":""} · ${Math.max(1,S.round-(S.turn===0?1:0))} ronda${Math.max(1,S.round-(S.turn===0?1:0))!==1?"s":""}.</p>
     ${cards}
     <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" id="btn-new" onclick="G.fresh()">Nueva partida 🔄</button>
   </div></div>`;
   confetti();
 }
 
-/* points overlay & end modal */
 function showOverlay(html){const o=document.createElement("div");o.className="overlay";o.id="ovl";o.innerHTML=`<div class="sheet">${html}</div>`;document.body.appendChild(o)}
 function closeOverlay(){const o=document.getElementById("ovl");if(o)o.remove()}
 G.points=function(){
@@ -431,42 +649,67 @@ G.askEnd=function(){
   <button class="btn btn-danger" id="btn-confirm-end" onclick="G.end()">Sí, terminar 🏁</button>
   <button class="btn btn-ghost" id="btn-cancel-end" onclick="G.closePoints()">Seguir jugando</button>`);
 };
+G.spicyVote=function(yes){
+  S.spicyVotes[S.turn]=yes;
+  if(S.turn===0){S.turn=1;save();renderSpicyGate()}
+  else{save();renderSpicyGate()}
+};
 
-/* ---------- actions ---------- */
 G.start=function(){
-  const n1=document.getElementById("p1name").value.trim()||"Jugador 1";
-  const n2=document.getElementById("p2name").value.trim()||"Jugador 2";
-  S=newState();S.players[0].name=n1;S.players[1].name=n2;
+  if(!guestName){renderSetupInvalid();return}
+  S=newState();S.players[0].name=guestName;S.players[1].name=HOST_NAME;
+  if(!prepareSession()){alert("No hay suficientes preguntas para armar la partida.");return}
   S.phase="handoff";S.last=null;save();renderHandoff();
 };
 G.ready=function(){
-  if(S.cur==null){const idx=pickQuestion();if(idx==null){G.end(true);return}S.cur=idx}
+  if(needsSpicyGate()&&!S.spicyGateDone){S.phase="spicy-gate";S.turn=0;S.spicyVotes=[null,null];save();renderSpicyGate();return}
+  if(S.qIdx>=SESSION_LEN){G.end(true);return}
+  if(S.cur==null){S.cur=fillSlot(S.qIdx);if(S.cur==null){G.end(true);return}}
   S.phase="question";S.sub="choice";save();renderQuestion();
 };
 G.answer=function(){S.sub="answer";save();renderQuestion()};
 G.skip=function(){S.sub="skip";save();renderQuestion()};
 G.back=function(){S.sub="choice";save();renderQuestion()};
 G.confirmAnswer=function(){
-  const q=QUESTIONS[S.cur],p=S.players[S.turn],d=PTS[q[0]][0];
-  p.score+=d;p.ans++;p.lv[q[0]][0]++;
-  S.last={d:d,name:p.name};advance();
+  const q=QUESTIONS[S.cur],p=S.players[S.turn],d=PTS[qLvl(q)][0],lv=qLvl(q);
+  p.score+=d;p.ans++;p.lv[lv][0]++;
+  S.consecSkipsL3=0; if(lv===3) S.consecL3++; else S.consecL3=0;
+  currentQuestionDone(); S.last={d:d,name:p.name}; advance(true);
 };
 G.confirmSkip=function(){
-  const q=QUESTIONS[S.cur],p=S.players[S.turn],d=PTS[q[0]][1];
-  p.score+=d;p.sk++;p.lv[q[0]][1]++;p.cat[q[1]]=(p.cat[q[1]]||0)+1;
-  S.last={d:d,name:p.name};advance();
+  const q=QUESTIONS[S.cur],p=S.players[S.turn],d=PTS[qLvl(q)][1],lv=qLvl(q);
+  p.score+=d;p.sk++;p.lv[lv][1]++;p.cat[qCat(q)]=(p.cat[qCat(q)]||0)+1;
+  S.consecSkipsL3=lv===3?S.consecSkipsL3+1:0;
+  if(lv===3) S.consecL3=0;
+  if(!replaceCurrentQuestion()){
+    currentQuestionDone(); S.last={d:d,name:p.name}; advance(true); return;
+  }
+  if(S.consecSkipsL3>=2 && S.plan[S.qIdx]===3){
+    S.plan[S.qIdx]=2;
+    const pool=poolForSlot(S.qIdx,2,{pairHist:loadPairHist()});
+    const alt=weightedPick(pool);
+    if(alt!=null){S.queue[S.qIdx]=alt;S.cur=alt}
+  } else S.cur=S.queue[S.qIdx];
+  S.last={d:d,name:p.name}; S.phase="question"; S.sub="choice"; save(); renderQuestion();
 };
-function advance(){
-  S.cur=null;S.sub="choice";
+function advance(completed){
+  if(completed){S.qIdx++;S.cur=null;S.sub="choice"}
+  if(S.qIdx>=SESSION_LEN){G.end(true);return}
   if(S.turn===0){S.turn=1}else{S.turn=0;S.round++}
   S.phase="handoff";save();renderHandoff();
 }
 G.end=function(auto){closeOverlay();S.phase="end";save();renderEnd(auto===true)};
 G.fresh=function(){clearSave();S=newState();renderSetup()};
-G.resume=function(){S=pendingResume;pendingResume=null;if(S.phase==="question")S.sub=S.sub||"choice";
-  if(S.phase==="handoff"||S.phase==="question"){S.phase==="handoff"?renderHandoff():renderQuestion()}else{renderSetup()}};
+G.resume=function(){
+  S=pendingResume;pendingResume=null;
+  if(!S.plan||!S.plan.length){if(!prepareSession()){renderSetup();return}}
+  if(S.phase==="question")S.sub=S.sub||"choice";
+  if(S.phase==="spicy-gate")renderSpicyGate();
+  else if(S.phase==="handoff")renderHandoff();
+  else if(S.phase==="question")renderQuestion();
+  else renderSetup();
+};
 
-/* confetti */
 function confetti(){
   if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;
   const cv=document.getElementById("cv");if(!cv)return;
@@ -475,22 +718,27 @@ function confetti(){
   const parts=Array.from({length:110},()=>({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*.5,
     w:6+Math.random()*6,h:8+Math.random()*8,c:colors[Math.floor(Math.random()*colors.length)],
     vy:2+Math.random()*3,vx:-1+Math.random()*2,r:Math.random()*Math.PI,vr:-.1+Math.random()*.2}));
-  let t=0;
-  (function tick(){
+  let t=0;(function tick(){
     ctx.clearRect(0,0,cv.width,cv.height);
-    parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;
-      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore()});
+    parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore()});
     if(++t<260)requestAnimationFrame(tick);else ctx.clearRect(0,0,cv.width,cv.height);
   })();
 }
 
-/* ---------- boot ---------- */
-(function(){
+async function initInvite(){
+  const id=INVITE.parseInviteId();
+  if(!id){guestName=null;boot();return}
+  try{guestName=await INVITE.decryptName(id);if(!guestName)guestName=null}catch(_){guestName=null}
+  boot();
+}
+function boot(){
   const saved=load();
-  if(saved&&(saved.phase==="handoff"||saved.phase==="question")&&saved.players&&saved.players[0].name){
+  if(saved&&(saved.phase==="handoff"||saved.phase==="question"||saved.phase==="spicy-gate")&&saved.players&&saved.players[0].name){
     pendingResume=saved;renderResume(saved);
-  }else{renderSetup()}
-})();
+  }else renderSetup();
+}
+initInvite();
+
 </script>
 </body>
 </html>

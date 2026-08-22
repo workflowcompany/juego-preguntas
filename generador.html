@@ -114,9 +114,12 @@ async function copyLink(){
   document.getElementById("copied").classList.remove("hidden");
 }
 
-if(sessionStorage.getItem("mistica-gen-ok")==="1") renderGen();
-else renderPin();
-(async()=>{PIN_EXPECTED=await pinHash(PIN)})();
+async function init(){
+  PIN_EXPECTED=await pinHash(PIN);
+  if(sessionStorage.getItem("mistica-gen-ok")==="1") renderGen();
+  else renderPin();
+}
+init();
 </script>
 </body>
 </html>

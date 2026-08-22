@@ -140,8 +140,11 @@ canvas.confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
 </head>
 <body>
 <div id="app"></div>
+<script src="invite-crypto.js"></script>
 <script>
 "use strict";
+const HOST_NAME="Sebas";
+let guestName=null;
 // [codigo, nivel, categoría, pregunta, notas] — Banco de Preguntas (Notion, Activas)
 const QUESTIONS=[
 [1,1,"Infancia y raíces","¿Cuál es el olor que más te devuelve a tu infancia?",""],
@@ -499,10 +502,19 @@ function topbar(){
   return `<div class="topbar"><span class="chip">Ronda ${S.round}</span><span class="chip">${pp}/${CFG.perPlayer} c/u</span>${turnChip()}<button class="linkbtn" id="btn-end" onclick="G.askEnd()">Terminar</button></div>`;
 }
 
-function renderSetup(){
+function renderSetupInvalid(){
   app.innerHTML=`<div class="screen"><div class="hero">
     <div class="logo">🔮</div>
-    <h1>Mística</h1>
+    <h1>Link inválido</h1>
+    <p>Este juego necesita un link de invitación personalizado. Pídele a ${esc(HOST_NAME)} que te comparta uno.</p>
+  </div></div>`;
+}
+
+function renderSetup(){
+  if(!guestName){renderSetupInvalid();return}
+  app.innerHTML=`<div class="screen"><div class="hero">
+    <div class="logo">🔮</div>
+    <h1><span style="color:var(--p1)">${esc(guestName)}</span> y ${esc(HOST_NAME)}</h1>
     <p>Las cartas revelan lo que rara vez se dice en voz alta. Se rotan el celular: responde y gana puntos… o pasa la carta y piérdelos.</p>
   </div>
   <div class="warning">
@@ -512,8 +524,6 @@ function renderSetup(){
     <p>Antes de las preguntas profundas, ambos decidirán si activan el <strong>modo picante 🌶️</strong> (opcional). Siempre pueden pasar una carta.</p>
   </div>
   <div class="stack">
-    <div class="field"><label for="p1name"><span class="dot" style="background:var(--p1)"></span>Jugador 1</label><input id="p1name" maxlength="18" placeholder="Nombre" autocomplete="off"/></div>
-    <div class="field"><label for="p2name"><span class="dot" style="background:var(--p2)"></span>Jugador 2</label><input id="p2name" maxlength="18" placeholder="Nombre" autocomplete="off"/></div>
     <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" id="btn-start" onclick="G.start()">Revelar el mazo ✨</button>
     <p class="center">Susurro +5/−2 · Confesión +10/−5 · Revelación +20/−10</p>
   </div></div>`;
@@ -643,9 +653,8 @@ G.spicyVote=function(yes){
 };
 
 G.start=function(){
-  const n1=document.getElementById("p1name").value.trim()||"Jugador 1";
-  const n2=document.getElementById("p2name").value.trim()||"Jugador 2";
-  S=newState();S.players[0].name=n1;S.players[1].name=n2;
+  if(!guestName){renderSetupInvalid();return}
+  S=newState();S.players[0].name=guestName;S.players[1].name=HOST_NAME;
   if(!prepareSession()){alert("No hay suficientes preguntas para armar la partida.");return}
   S.phase="handoff";S.last=null;save();renderHandoff();
 };
@@ -713,12 +722,19 @@ function confetti(){
   })();
 }
 
-(function(){
+async function initInvite(){
+  const id=INVITE.parseInviteId();
+  if(!id){guestName=null;boot();return}
+  try{guestName=await INVITE.decryptName(id);if(!guestName)guestName=null}catch(_){guestName=null}
+  boot();
+}
+function boot(){
   const saved=load();
   if(saved&&(saved.phase==="handoff"||saved.phase==="question"||saved.phase==="spicy-gate")&&saved.players&&saved.players[0].name){
     pendingResume=saved;renderResume(saved);
   }else renderSetup();
-})();
+}
+initInvite();
 
 </script>
 </body>

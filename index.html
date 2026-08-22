@@ -320,7 +320,11 @@ const CFG={
   minDivertidas:2,
   nosotrosFrom:5,
   sensitiveDefault:false,
-  historyTtlDays:90
+  historyTtlDays:90,
+  warmUpSlots:10,
+  revelacionFrom:9,
+  maxL3InWarmUp:1,
+  openingLevels:[1,1,1,2,2,1,2,2,2,3]
 };
 const SESSION_LEN=CFG.perPlayer*2;
 const PTS={1:[5,-2],2:[10,-5],3:[20,-10]};
@@ -370,8 +374,16 @@ function buildLevelPlan(len){
   while(t[0]+t[1]+t[2]>len)t[t.indexOf(Math.max(...t))]--;
   while(t[0]+t[1]+t[2]<len)t[t.indexOf(Math.min(...t))]++;
   t[0]=Math.max(t[0],2);
-  const plan=[1,1]; const counts={1:2,2:0,3:0}; let last=1,consec3=0; const comic=new Set();
-  for(let i=2;i<len;i++){
+  const plan=[]; const counts={1:0,2:0,3:0}; const comic=new Set();
+  const warmUp=Math.min(CFG.warmUpSlots,len,CFG.openingLevels.length);
+  for(let i=0;i<warmUp;i++){
+    const lvl=CFG.openingLevels[i];
+    plan.push(lvl); counts[lvl]++;
+    if(i===5) comic.add(i);
+  }
+  let last=plan[plan.length-1]||1, consec3=0;
+  for(let j=plan.length-1;j>=0&&plan[j]===3;j--) consec3++;
+  for(let i=warmUp;i<len;i++){
     const rem=len-i, need={1:t[0]-counts[1],2:t[1]-counts[2],3:t[2]-counts[3]};
     if(consec3>=CFG.comicReliefAfter && need[1]>0){
       plan.push(1);counts[1]++;comic.add(i);consec3=0;last=1;continue;
@@ -380,8 +392,18 @@ function buildLevelPlan(len){
       const pick=need[1]>0?1:need[2]>0?2:1;plan.push(pick);counts[pick]++;continue;
     }
     let opts=[];
-    for(let l=1;l<=3;l++) if(need[l]>0 && l>=last-1) opts.push(l);
-    if(!opts.length) for(let l=1;l<=3;l++) if(need[l]>0) opts.push(l);
+    for(let l=1;l<=3;l++){
+      if(need[l]<=0) continue;
+      if(l>=last-1) opts.push(l);
+    }
+    if(i<CFG.revelacionFrom) opts=opts.filter(l=>l<3);
+    if(i<CFG.warmUpSlots && counts[3]>=CFG.maxL3InWarmUp) opts=opts.filter(l=>l<3);
+    if(!opts.length) for(let l=1;l<=3;l++){
+      if(need[l]<=0) continue;
+      if(i<CFG.revelacionFrom&&l===3) continue;
+      if(i<CFG.warmUpSlots&&l===3&&counts[3]>=CFG.maxL3InWarmUp) continue;
+      opts.push(l);
+    }
     let chosen=opts.includes(last+1)&&last<3?last+1:opts.includes(last)?last:opts[opts.length-1];
     if(rem<=need[3]&&need[3]>0&&opts.includes(3)) chosen=3;
     if(rem<=need[2]+need[3]&&need[2]>0&&chosen<2&&opts.includes(2)) chosen=2;
@@ -405,6 +427,7 @@ function poolForSlot(slotIdx,targetLvl,opts={}){
     const q=QUESTIONS[i];
     if(used.has(i))return false;
     if(qLvl(q)!==targetLvl)return false;
+    if(slotIdx<CFG.revelacionFrom&&qLvl(q)===3)return false;
     if(isSensible(q)&&!allowSensitive)return false;
     if(isPicante(q)&&!allowPicante)return false;
     if(!nosotrosOk&&isNosotros(q))return false;
@@ -447,14 +470,22 @@ function untrackPick(idx){
   if(cat==="Divertidas"&&S.divertidas>0) S.divertidas--;
 }
 
+function capLvlForSlot(slotIdx,lvl){
+  if(slotIdx<CFG.revelacionFrom) return Math.min(lvl,2);
+  if(slotIdx<CFG.warmUpSlots){
+    const l3Before=S.plan.slice(0,slotIdx).filter(x=>x===3).length;
+    if(l3Before>=CFG.maxL3InWarmUp) return Math.min(lvl,2);
+  }
+  return lvl;
+}
 function fillSlot(i){
   if(S.queue[i]!=null) return S.queue[i];
-  let lvl=S.plan[i]; let idx=null;
+  let lvl=capLvlForSlot(i,S.plan[i]); let idx=null;
   for(let attempt=0;attempt<8&&!idx;attempt++){
     const pool=poolForSlot(i,lvl,{pairHist:loadPairHist()});
     idx=weightedPick(pool);
     if(!idx&&attempt===3) lvl=Math.max(1,lvl-1);
-    if(!idx&&attempt===5) lvl=Math.min(3,lvl+1);
+    if(!idx&&attempt===5) lvl=Math.min(capLvlForSlot(i,3),lvl+1);
   }
   if(idx==null) return null;
   S.queue[i]=idx; trackPick(idx); return idx;

@@ -48,7 +48,8 @@ body::before{
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* header */
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0 12px}
+.topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 8px;padding:4px 0 12px}
+.topbar .linkbtn{margin-left:auto;min-height:36px}
 .chip{display:inline-flex;align-items:center;gap:6px;font-size:0.82rem;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--raised);border:1px solid var(--border);color:var(--text);white-space:nowrap}
 .chip.turn1{background:rgba(155,127,212,.2);border-color:rgba(155,127,212,.55)}
 .chip.turn2{background:rgba(212,165,116,.18);border-color:rgba(212,165,116,.5)}
@@ -137,6 +138,37 @@ body::before{
 .statcard .line{font-size:0.92rem;color:var(--sub);line-height:1.45}
 .lvlrow{display:flex;gap:8px;flex-wrap:wrap}
 .lvltag{font-size:0.82rem;font-weight:600;padding:5px 11px;border-radius:999px;border:1px solid var(--border);background:var(--raised);color:var(--sub)}
+/* modes */
+.modecard{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;text-align:left;box-shadow:0 0 24px rgba(147,51,234,.12)}
+.modecard.otg{border-color:rgba(125,211,176,.45);box-shadow:0 0 24px rgba(79,142,232,.15)}
+.modecard p{font-size:0.95rem;line-height:1.55;color:var(--sub)}
+.modecard p strong{color:var(--text)}
+.modecard .cats{font-size:0.88rem}
+.mode-head{display:flex;gap:12px;align-items:center}
+.mode-ico{font-size:30px;line-height:1}
+.mode-title{font-family:var(--font-display);font-size:1.2rem;font-weight:700}
+.mode-meta{font-size:0.85rem;color:var(--sub);margin-top:2px}
+
+/* trivia */
+.wheel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:92px;padding:6px 4px;border-radius:16px;background:var(--raised);border:2px solid var(--border);font-size:0.74rem;text-align:center;overflow-wrap:anywhere;font-weight:600;color:var(--sub);transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease}
+.tile .e{font-size:30px;line-height:1}
+.tile.on{border-color:var(--tc);color:#fff;transform:scale(1.06);box-shadow:0 0 22px var(--tc)}
+.tile.won{opacity:1}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{width:100%;min-height:54px;border-radius:14px;border:1px solid var(--border);background:var(--raised);color:#fff;font-family:var(--font-body);font-size:1.02rem;font-weight:600;text-align:left;padding:12px 16px;cursor:pointer;line-height:1.35}
+.opt:active{transform:scale(.98)}
+.opt:disabled{cursor:default}
+.opt.right{background:rgba(114,188,143,.2);border-color:rgba(114,188,143,.8);color:#b8f2cf}
+.opt.wrong{background:rgba(233,115,102,.18);border-color:rgba(233,115,102,.7);color:#ffb1a8}
+.opt.dim{opacity:.45}
+.dato{background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.35);border-radius:14px;padding:12px 14px;font-size:0.95rem;line-height:1.5;color:var(--sub)}
+.dato b{color:var(--gold)}
+.btn-toggle{background:transparent;border:1px dashed var(--border);color:var(--sub);font-size:0.95rem}
+.btn-toggle.on{border-style:solid;border-color:rgba(114,188,143,.6);background:rgba(114,188,143,.14);color:#b8f2cf}
+.crowns{display:flex;gap:8px;flex-wrap:wrap}
+.tcrown{font-size:24px;line-height:1;opacity:.22;filter:grayscale(1)}
+.tcrown.won{opacity:1;filter:none}
 canvas.confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
 @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
 </style>
@@ -144,6 +176,7 @@ canvas.confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
 <body>
 <div id="app"></div>
 <script src="invite-crypto.js"></script>
+<script src="onthego-data.js"></script>
 <script>
 "use strict";
 const HOST_NAME="Sebas";
@@ -326,7 +359,9 @@ const CFG={
   maxL3InWarmUp:1,
   openingLevels:[1,1,1,2,2,1,2,2,2,3]
 };
-const SESSION_LEN=CFG.perPlayer*2;
+function isOtg(){return S&&S.mode==="otg"}
+function perPlayer(){return isOtg()?OTG.perPlayer:CFG.perPlayer}
+function sessLen(){return perPlayer()*2}
 const PTS={1:[5,-2],2:[10,-5],3:[20,-10]};
 const LVL={1:{name:"I · Susurro",ga:"var(--l1a)",gb:"var(--l1b)"},2:{name:"II · Confesión",ga:"var(--l2a)",gb:"var(--l2b)"},3:{name:"III · Revelación",ga:"var(--l3a)",gb:"var(--l3b)"}};
 const CATEMOJI={"Infancia y raíces":"🌱","Relaciones":"💞","Trabajo y ambición":"💼","Miedos e inseguridades":"🌑","Valores y creencias":"🧭","Divertidas":"🎉","Futuro":"🔮","Arrepentimientos":"🕯️"};
@@ -362,11 +397,11 @@ function pairKey(){const n=S.players.map(p=>p.name.trim().toLowerCase()).sort();
 function loadPairHist(){try{const all=JSON.parse(localStorage.getItem(HIST_KEY)||"{}");const e=all[pairKey()];if(!e)return new Set();if(Date.now()-e.t>CFG.historyTtlDays*864e5)return new Set();return new Set(e.codes||[])}catch(e){return new Set()}}
 function savePairHist(codes){try{const all=JSON.parse(localStorage.getItem(HIST_KEY)||"{}");all[pairKey()]={t:Date.now(),codes:[...codes]};localStorage.setItem(HIST_KEY,JSON.stringify(all))}catch(e){}}
 
-function newState(){return{phase:"setup",sub:"choice",round:1,turn:0,queue:[],qIdx:0,cur:null,last:null,
+function newState(){return{mode:"full",otgQ:[],tOpts:null,tSel:null,followUp:false,phase:"setup",sub:"choice",round:1,turn:0,queue:[],qIdx:0,cur:null,last:null,
   spicyGateDone:false,spicyVotes:[null,null],spicy:false,sensitive:CFG.sensitiveDefault,
   consecSkipsL3:0,consecL3:0,catCounts:{},divertidas:0,plan:[],comicSlots:new Set(),
   players:[mkPlayer(""),mkPlayer("")]}};
-function mkPlayer(name){return{name:name,score:0,ans:0,sk:0,lv:{1:[0,0],2:[0,0],3:[0,0]},cat:{}}}
+function mkPlayer(name){return{name:name,score:0,ans:0,sk:0,lv:{1:[0,0],2:[0,0],3:[0,0]},cat:{},tr:[0,0],crowns:[],fu:0}}
 let S=newState();let pendingResume=null;
 
 function buildLevelPlan(len){
@@ -418,7 +453,7 @@ function poolForSlot(slotIdx,targetLvl,opts={}){
   const lastCat=slotIdx>0&&S.queue[slotIdx-1]!=null?qCat(QUESTIONS[S.queue[slotIdx-1]]):null;
   const pairHist=opts.pairHist||loadPairHist();
   const needComic=S.comicSlots.has(slotIdx);
-  const needClose=slotIdx===SESSION_LEN-1;
+  const needClose=slotIdx===sessLen()-1;
   const nosotrosOk=slotIdx>=CFG.nosotrosFrom;
   const allowPicante=S.spicy===true;
   const allowSensitive=S.sensitive===true;
@@ -492,10 +527,10 @@ function fillSlot(i){
 }
 
 function prepareSession(){
-  S.queue=new Array(SESSION_LEN).fill(null);
+  S.queue=new Array(sessLen()).fill(null);
   S.catCounts={}; S.divertidas=0;
-  buildLevelPlan(SESSION_LEN);
-  for(let i=0;i<Math.min(3,SESSION_LEN);i++){
+  buildLevelPlan(sessLen());
+  for(let i=0;i<Math.min(3,sessLen());i++){
     if(!fillSlot(i)) return false;
   }
   if(S.divertidas<1){
@@ -520,11 +555,12 @@ function currentQuestionDone(){
 }
 
 function cardsPlayed(){return S.qIdx}
-function cardsTotal(){return SESSION_LEN}
+function cardsTotal(){return sessLen()}
 function playerQuestionsDone(){return Math.floor(S.qIdx/2)}
 function needsSpicyGate(){
+  if(isOtg())return false;
   if(S.spicyGateDone)return false;
-  for(let i=S.qIdx;i<SESSION_LEN;i++) if(S.plan[i]===3) return true;
+  for(let i=S.qIdx;i<sessLen();i++) if(S.plan[i]===3) return true;
   return false;
 }
 
@@ -533,7 +569,7 @@ const app=document.getElementById("app"); const G={}; window.G=G;
 function turnChip(){const p=S.players[S.turn];return `<span class="chip turn${S.turn+1}"><span class="dot" style="background:var(--p${S.turn+1})"></span>Turno de ${esc(p.name)}</span>`}
 function topbar(){
   const pp=playerQuestionsDone();
-  return `<div class="topbar"><span class="chip">Ronda ${S.round}</span><span class="chip">${pp}/${CFG.perPlayer} c/u</span>${turnChip()}<button class="linkbtn" id="btn-end" onclick="G.askEnd()">Terminar</button></div>`;
+  return `<div class="topbar"><span class="chip">Ronda ${S.round}</span><span class="chip">${pp}/${perPlayer()} c/u</span>${turnChip()}<button class="linkbtn" id="btn-end" onclick="G.askEnd()">Terminar</button></div>`;
 }
 
 function renderSetupInvalid(){
@@ -549,25 +585,29 @@ function renderSetup(){
   app.innerHTML=`<div class="screen"><div class="hero">
     <div class="logo">🔮</div>
     <h1><span style="color:var(--p1)">${esc(guestName)}</span> y ${esc(HOST_NAME)}</h1>
-    <p>Las cartas revelan lo que rara vez se dice en voz alta. Se rotan el celular: responde y gana puntos… o pasa la carta y piérdelos.</p>
+    <p>Las cartas revelan lo que rara vez se dice en voz alta. Se rotan el celular: responde y gana puntos… o pasa la carta y piérdelos. Elijan cómo quieren jugar.</p>
   </div>
-  <div class="warning">
-    <div class="warn-title">⚠️ Aviso antes de abrir el mazo</div>
-    <p>Partida de <strong>${CFG.perPlayer} preguntas por jugador</strong> (${SESSION_LEN} cartas). Las preguntas suben de intensidad con un arco cuidado: <strong>suaves → personales → profundas</strong>, con respiros de risa intercalados.</p>
-    <p class="cats">Categorías: <strong>🌱 Infancia</strong> · <strong>💞 Relaciones</strong> · <strong>💼 Trabajo</strong> · <strong>🌑 Miedos</strong> · <strong>🧭 Valores</strong> · <strong>🎉 Divertidas</strong> · <strong>🔮 Futuro</strong> · <strong>🕯️ Arrepentimientos</strong></p>
-    <p>Antes de las preguntas profundas, ambos decidirán si activan el <strong>modo picante 🌶️</strong> (opcional). Siempre pueden pasar una carta.</p>
+  <div class="modecard otg">
+    <div class="mode-head"><span class="mode-ico">⚡</span><div><div class="mode-title">On the go</div><div class="mode-meta">${OTG.perPlayer} cartas por persona · ~30 min</div></div></div>
+    <p>Preguntas para conocerse, de ligeras a personales, con <strong>trivia estilo Preguntados</strong> entre medio. Si después de una respuesta el otro hace una <strong>repregunta</strong>, gana +${OTG_FOLLOW}.</p>
+    <button class="btn btn-grad" style="--ga:#7dd3b0;--gb:#4f8ee8" id="btn-start-otg" onclick="G.start('otg')">Jugar On the go ⚡</button>
   </div>
-  <div class="stack">
-    <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" id="btn-start" onclick="G.start()">Revelar el mazo ✨</button>
+  <div class="modecard">
+    <div class="mode-head"><span class="mode-ico">🔮</span><div><div class="mode-title">Mística completa</div><div class="mode-meta">${CFG.perPlayer} cartas por persona · ${CFG.perPlayer*2} en total</div></div></div>
+    <p>Las preguntas suben de intensidad: <strong>suaves → personales → profundas</strong>, con respiros de risa intercalados. Antes de las profundas, ambos deciden si activan el <strong>modo picante 🌶️</strong>.</p>
+    <p class="cats">🌱 Infancia · 💞 Relaciones · 💼 Trabajo · 🌑 Miedos · 🧭 Valores · 🎉 Divertidas · 🔮 Futuro · 🕯️ Arrepentimientos</p>
+    <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" id="btn-start" onclick="G.start('full')">Revelar el mazo ✨</button>
     <p class="center">Susurro +5/−2 · Confesión +10/−5 · Revelación +20/−10</p>
+  </div>
+  <p class="center">Siempre pueden pasar una carta, pero cuesta puntos.</p>
   </div></div>`;
 }
 
 function renderResume(st){
   const [a,b]=st.players;
   app.innerHTML=`<div class="screen"><div class="hero">
-    <div class="logo">🔮</div><h1>Partida en curso</h1>
-    <p>Carta ${st.qIdx+1}/${SESSION_LEN} — ${esc(a.name)} ${a.score} pts vs ${esc(b.name)} ${b.score} pts</p></div>
+    <div class="logo">${st.mode==="otg"?"⚡":"🔮"}</div><h1>Partida en curso${st.mode==="otg"?" · On the go":""}</h1>
+    <p>Carta ${st.qIdx+1}/${(st.mode==="otg"?OTG.perPlayer:CFG.perPlayer)*2} — ${esc(a.name)} ${a.score} pts vs ${esc(b.name)} ${b.score} pts</p></div>
   <div class="stack">
     <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" id="btn-resume" onclick="G.resume()">Continuar partida ▶️</button>
     <button class="btn btn-ghost" id="btn-fresh" onclick="G.fresh()">Nueva partida</button>
@@ -596,12 +636,13 @@ function renderSpicyGate(){
 function renderHandoff(){
   const p=S.players[S.turn];
   let banner="";
-  if(S.last){banner=`<span class="banner ${S.last.d>0?"gain":"loss"}">${S.last.d>0?"✨":"🙈"} ${S.last.d>0?"+":""}${S.last.d} pts para ${esc(S.last.name)}</span>`}
+  if(S.last){banner=`<span class="banner ${S.last.d>0?"gain":"loss"}">${S.last.d>0?"✨":"🙈"} ${S.last.d>0?"+":""}${S.last.d} pts para ${esc(S.last.name)}</span>`;
+    if(S.last.fu)banner+=`<span class="banner gain">🔁 +${OTG_FOLLOW} pts para ${esc(S.last.fu)} por la repregunta</span>`}
   app.innerHTML=`${topbar()}<div class="screen"><div class="handoff">
     ${banner}
     <div class="big">📲</div>
     <h2>Pásale el celular a<br/><span style="color:var(--p${S.turn+1})">${esc(p.name)}</span></h2>
-    <p>Carta ${S.qIdx+1} de ${SESSION_LEN} · Ronda ${S.round}</p>
+    <p>Carta ${S.qIdx+1} de ${sessLen()} · Ronda ${S.round}</p>
     <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea;max-width:320px" id="btn-ready" onclick="G.ready()">Soy ${esc(p.name)}, estoy listo/a ✋</button>
   </div></div>`;
 }
@@ -661,7 +702,7 @@ function renderEnd(auto){
   app.innerHTML=`<canvas class="confetti" id="cv"></canvas><div class="screen"><div class="end">
     <div class="crown">${crown}</div>
     <h2>${title}</h2>
-    <p class="sub">${auto?"¡Completaron las 70 cartas! ":""}${S.qIdx} carta${S.qIdx!==1?"s":""} jugada${S.qIdx!==1?"s":""} · ${Math.max(1,S.round-(S.turn===0?1:0))} ronda${Math.max(1,S.round-(S.turn===0?1:0))!==1?"s":""}.</p>
+    <p class="sub">${auto?`¡Completaron las ${sessLen()} cartas! `:""}${S.qIdx} carta${S.qIdx!==1?"s":""} jugada${S.qIdx!==1?"s":""} · ${Math.max(1,S.round-(S.turn===0?1:0))} ronda${Math.max(1,S.round-(S.turn===0?1:0))!==1?"s":""}.</p>
     ${cards}
     <button class="btn btn-grad" style="--ga:var(--gold);--gb:#9333ea" id="btn-new" onclick="G.fresh()">Nueva partida 🔄</button>
   </div></div>`;
@@ -686,28 +727,31 @@ G.spicyVote=function(yes){
   else{save();renderSpicyGate()}
 };
 
-G.start=function(){
+G.start=function(mode){
   if(!guestName){renderSetupInvalid();return}
-  S=newState();S.players[0].name=guestName;S.players[1].name=HOST_NAME;
-  if(!prepareSession()){alert("No hay suficientes preguntas para armar la partida.");return}
+  S=newState();S.mode=mode==="otg"?"otg":"full";S.players[0].name=guestName;S.players[1].name=HOST_NAME;
+  if(!(isOtg()?otgPrepare():prepareSession())){alert("No hay suficientes preguntas para armar la partida.");return}
   S.phase="handoff";S.last=null;save();renderHandoff();
 };
 G.ready=function(){
+  if(isOtg()){otgShow();return}
   if(needsSpicyGate()&&!S.spicyGateDone){S.phase="spicy-gate";S.turn=0;S.spicyVotes=[null,null];save();renderSpicyGate();return}
-  if(S.qIdx>=SESSION_LEN){G.end(true);return}
+  if(S.qIdx>=sessLen()){G.end(true);return}
   if(S.cur==null){S.cur=fillSlot(S.qIdx);if(S.cur==null){G.end(true);return}}
   S.phase="question";S.sub="choice";save();renderQuestion();
 };
-G.answer=function(){S.sub="answer";save();renderQuestion()};
-G.skip=function(){S.sub="skip";save();renderQuestion()};
-G.back=function(){S.sub="choice";save();renderQuestion()};
+G.answer=function(){S.sub="answer";save();otgRerender()};
+G.skip=function(){S.sub="skip";save();otgRerender()};
+G.back=function(){S.sub="choice";save();otgRerender()};
 G.confirmAnswer=function(){
+  if(isOtg()){otgConfirmAnswer();return}
   const q=QUESTIONS[S.cur],p=S.players[S.turn],d=PTS[qLvl(q)][0],lv=qLvl(q);
   p.score+=d;p.ans++;p.lv[lv][0]++;
   S.consecSkipsL3=0; if(lv===3) S.consecL3++; else S.consecL3=0;
   currentQuestionDone(); S.last={d:d,name:p.name}; advance(true);
 };
 G.confirmSkip=function(){
+  if(isOtg()){otgConfirmSkip();return}
   const q=QUESTIONS[S.cur],p=S.players[S.turn],d=PTS[qLvl(q)][1],lv=qLvl(q);
   p.score+=d;p.sk++;p.lv[lv][1]++;p.cat[qCat(q)]=(p.cat[qCat(q)]||0)+1;
   S.consecSkipsL3=lv===3?S.consecSkipsL3+1:0;
@@ -724,15 +768,20 @@ G.confirmSkip=function(){
   S.last={d:d,name:p.name}; S.phase="question"; S.sub="choice"; save(); renderQuestion();
 };
 function advance(completed){
-  if(completed){S.qIdx++;S.cur=null;S.sub="choice"}
-  if(S.qIdx>=SESSION_LEN){G.end(true);return}
+  if(completed){S.qIdx++;S.cur=null;S.sub="choice";S.tOpts=null;S.tSel=null;S.followUp=false}
+  if(S.qIdx>=sessLen()){G.end(true);return}
   if(S.turn===0){S.turn=1}else{S.turn=0;S.round++}
   S.phase="handoff";save();renderHandoff();
 }
-G.end=function(auto){closeOverlay();S.phase="end";save();renderEnd(auto===true)};
+G.end=function(auto){closeOverlay();S.phase="end";save();if(isOtg())renderOtgEnd(auto===true);else renderEnd(auto===true)};
 G.fresh=function(){clearSave();S=newState();renderSetup()};
 G.resume=function(){
   S=pendingResume;pendingResume=null;
+  if(isOtg()){
+    if(!S.otgQ||!S.otgQ.length){renderSetup();return}
+    if(S.phase==="question")otgShow(true);else renderHandoff();
+    return;
+  }
   if(!S.plan||!S.plan.length){if(!prepareSession()){renderSetup();return}}
   if(S.phase==="question")S.sub=S.sub||"choice";
   if(S.phase==="spicy-gate")renderSpicyGate();
@@ -754,6 +803,218 @@ function confetti(){
     parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore()});
     if(++t<260)requestAnimationFrame(tick);else ctx.clearRect(0,0,cv.width,cv.height);
   })();
+}
+
+/* ===================== MODO ON THE GO ===================== */
+const OTG={perPlayer:12,triviaSlots:new Set([0,3,6,9,12,15,18,21]),connLevels:[1,1,1,1,1,1,2,2,2,2,2,2,3,3,4,4]};
+const OTG_PTS={1:[5,-2],2:[10,-5],3:[10,-5],4:[5,-2]};
+const OTG_FOLLOW=3, OTG_TRIVIA_PTS=10;
+const OTG_LVL={1:LVL[1],2:LVL[2],3:LVL[3],4:{name:"✦ Cierre",ga:"var(--gold)",gb:"#e8d5ff"}};
+const OTG_CAT_ORDER=Object.keys(OTG_TRIVIA_CATS);
+
+function otgUsed(k){return new Set(S.otgQ.filter(e=>e.k===k&&e.id!=null).map(e=>e.id))}
+function otgPickConn(lvl,exclude){
+  const used=otgUsed("c"), hist=loadPairHist();
+  if(exclude!=null) used.add(exclude);
+  let pool=OTG_CONNECT.map((_,i)=>i).filter(i=>OTG_CONNECT[i][1]===lvl&&!used.has(i));
+  const fresh=pool.filter(i=>!hist.has(OTG_CONNECT[i][0]));
+  if(fresh.length) pool=fresh;
+  return pool.length?pool[Math.floor(Math.random()*pool.length)]:null;
+}
+function otgTriviaPool(cat){
+  const used=otgUsed("t"), hist=loadPairHist();
+  const pool=OTG_TRIVIA.map((_,i)=>i).filter(i=>!used.has(i)&&(!cat||OTG_TRIVIA[i][1]===cat));
+  const fresh=pool.filter(i=>!hist.has(OTG_TRIVIA[i][0]));
+  return fresh.length?fresh:pool;
+}
+function otgPrepare(){
+  S.otgQ=[]; let ci=0;
+  for(let i=0;i<sessLen();i++){
+    if(OTG.triviaSlots.has(i)) S.otgQ.push({k:"t",id:null});
+    else S.otgQ.push({k:"c",lvl:OTG.connLevels[ci++],id:null});
+  }
+  for(const e of S.otgQ) if(e.k==="c") e.id=otgPickConn(e.lvl);
+  return S.otgQ.every(e=>e.k==="t"||e.id!=null);
+}
+function otgMarkDone(code){const h=loadPairHist();h.add(code);savePairHist(h)}
+function otgEntry(){return S.otgQ[S.qIdx]}
+function otherPlayer(){return S.players[S.turn===0?1:0]}
+
+function otgShow(resuming){
+  if(S.qIdx>=sessLen()){G.end(true);return}
+  const e=otgEntry(); S.phase="question";
+  if(e.k==="t"){
+    if(e.id==null||!S.tOpts){e.id=null;S.sub="spin"}
+    else if(S.sub!=="reveal") S.sub="ask";
+    save(); e.id==null?renderTriviaSpin():renderTrivia();
+  }else{
+    if(!resuming||!["choice","answer","skip"].includes(S.sub)){S.sub="choice";S.followUp=false}
+    save(); renderOtgConn();
+  }
+}
+
+/* ---------- Cartas de conexión ---------- */
+function renderOtgConn(){
+  const e=otgEntry(), q=OTG_CONNECT[e.id], lvl=OTG_LVL[q[1]], [win,lose]=OTG_PTS[q[1]];
+  const other=otherPlayer();
+  const chips=`<div class="chips"><span class="lvlchip">${lvl.name}</span><span class="catchip">⚡ On the go</span></div>`;
+  let body="";
+  if(S.sub==="choice"){
+    body=`<div class="card" style="--ga:${lvl.ga};--gb:${lvl.gb}">${chips}
+      <div class="q">${esc(q[2])}</div>
+      <div class="vals"><span class="gain">✓ Responder +${win}</span><span class="loss">✗ Pasar ${lose}</span></div>
+    </div>
+    <div class="stack">
+      <button class="btn btn-grad" style="--ga:${lvl.ga};--gb:${lvl.gb}" id="btn-answer" onclick="G.answer()">Responder&nbsp;<small>+${win}</small></button>
+      <button class="btn btn-danger" id="btn-skip" onclick="G.skip()">Paso&nbsp;<small>${lose}</small></button>
+      <button class="btn btn-ghost" id="btn-points" onclick="G.points()">📊 Ver puntos</button>
+    </div>`;
+  }else if(S.sub==="answer"){
+    body=`<div class="card" style="--ga:${lvl.ga};--gb:${lvl.gb}">${chips}
+      <div class="bigicon">🗣️</div>
+      <div class="q">${esc(q[2])}</div>
+      <p class="subtxt">Respóndela en voz alta, sin afán. ${esc(other.name)}: si algo te dio curiosidad, haz una repregunta antes de seguir.</p>
+    </div>
+    <div class="stack">
+      <button class="btn btn-toggle${S.followUp?" on":""}" id="btn-followup" onclick="G.toggleFollowUp()">${S.followUp?`✓ ${esc(other.name)} hizo una repregunta · +${OTG_FOLLOW}`:`🔁 ${esc(other.name)} hizo una repregunta · +${OTG_FOLLOW}`}</button>
+      <button class="btn btn-grad" style="--ga:${lvl.ga};--gb:${lvl.gb}" id="btn-confirm-answer" onclick="G.confirmAnswer()">Listo, respondida ✓&nbsp;<small>+${win}</small></button>
+      <button class="btn btn-ghost" id="btn-back" onclick="G.back()">← Volver</button>
+    </div>`;
+  }else{
+    body=`<div class="card" style="--ga:${lvl.ga};--gb:${lvl.gb}">${chips}
+      <div class="bigicon">😬</div>
+      <div class="q">¿Seguro que pasas?</div>
+      <p class="subtxt">Perderás ${Math.abs(lose)} puntos. Te sale otra pregunta del mismo nivel.</p>
+    </div>
+    <div class="stack">
+      <button class="btn btn-danger" id="btn-confirm-skip" onclick="G.confirmSkip()">Sí, paso&nbsp;<small>${lose}</small></button>
+      <button class="btn btn-ghost" id="btn-back" onclick="G.back()">← Volver</button>
+    </div>`;
+  }
+  app.innerHTML=`${topbar()}<div class="screen" style="justify-content:flex-start;padding-top:8px">${body}</div>`;
+}
+function otgRerender(){isOtg()?renderOtgConn():renderQuestion()}
+G.toggleFollowUp=function(){S.followUp=!S.followUp;save();renderOtgConn()};
+function otgConfirmAnswer(){
+  const e=otgEntry(), q=OTG_CONNECT[e.id], p=S.players[S.turn], d=OTG_PTS[q[1]][0];
+  p.score+=d; p.ans++;
+  let fu=null;
+  if(S.followUp){const o=otherPlayer();o.score+=OTG_FOLLOW;o.fu=(o.fu||0)+1;fu=o.name}
+  otgMarkDone(q[0]); S.last={d:d,name:p.name,fu:fu}; advance(true);
+}
+function otgConfirmSkip(){
+  const e=otgEntry(), q=OTG_CONNECT[e.id], p=S.players[S.turn], d=OTG_PTS[q[1]][1];
+  p.score+=d; p.sk++;
+  const old=e.id; e.id=null;
+  const alt=otgPickConn(e.lvl,old);
+  S.last={d:d,name:p.name};
+  if(alt==null){e.id=old;otgMarkDone(q[0]);advance(true);return}
+  e.id=alt; S.sub="choice"; S.followUp=false; save(); renderOtgConn();
+}
+
+/* ---------- Trivia ---------- */
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function wheelHtml(activeCat){
+  const p=S.players[S.turn];
+  return `<div class="wheel">${OTG_CAT_ORDER.map(c=>{const k=OTG_TRIVIA_CATS[c];const won=p.crowns&&p.crowns.includes(c);
+    return `<div class="tile${c===activeCat?" on":""}" data-cat="${esc(c)}" style="--tc:${k.color}"><span class="e">${k.emoji}</span>${esc(c).replace("Entretenimiento","Entreteni&shy;miento")}${won?" ✓":""}</div>`}).join("")}</div>`;
+}
+function renderTriviaSpin(){
+  const p=S.players[S.turn];
+  app.innerHTML=`${topbar()}<div class="screen"><div class="handoff">
+    <div class="big" style="animation:none">🎡</div>
+    <h2>¡Trivia!</h2>
+    <p>Gira la ruleta para elegir la categoría. Si aciertas ganas +${OTG_TRIVIA_PTS} y el ícono de la categoría.</p>
+  </div>
+  ${wheelHtml(null)}
+  <div class="stack"><button class="btn btn-grad" style="--ga:#7dd3b0;--gb:#4f8ee8" id="btn-spin" onclick="G.spin()">Girar la ruleta, ${esc(p.name)} 🎡</button></div>
+  </div>`;
+}
+let spinning=false;
+G.spin=function(){
+  if(spinning)return; spinning=true;
+  const btn=document.getElementById("btn-spin"); if(btn){btn.disabled=true;btn.textContent="Girando…"}
+  const cats=OTG_CAT_ORDER.filter(c=>otgTriviaPool(c).length);
+  const target=cats[Math.floor(Math.random()*cats.length)];
+  const tiles=[...document.querySelectorAll(".tile")];
+  const ti=OTG_CAT_ORDER.indexOf(target);
+  const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const steps=reduce?1:OTG_CAT_ORDER.length*3+ti+1;
+  let k=0;
+  function finish(){
+    const pool=otgTriviaPool(target), id=pool[Math.floor(Math.random()*pool.length)], t=OTG_TRIVIA[id];
+    const e=otgEntry(); e.id=id; S.tOpts=shuffle([t[3],...t[4]]); S.tSel=null; S.sub="ask"; save();
+    setTimeout(()=>{spinning=false;renderTrivia()},reduce?0:650);
+  }
+  (function step(){
+    const idx=reduce?ti:k%OTG_CAT_ORDER.length;
+    tiles.forEach((el,i)=>el.classList.toggle("on",i===idx));
+    k++;
+    if(k>=steps){finish();return}
+    setTimeout(step,60+Math.pow(k/steps,3)*340);
+  })();
+};
+function renderTrivia(){
+  const e=otgEntry(), t=OTG_TRIVIA[e.id], cat=OTG_TRIVIA_CATS[t[1]];
+  const revealed=S.sub==="reveal";
+  const correct=t[3];
+  const opts=S.tOpts.map((o,i)=>{
+    let cls="opt";
+    if(revealed){if(o===correct)cls+=" right";else if(i===S.tSel)cls+=" wrong";else cls+=" dim"}
+    return `<button class="${cls}" id="opt-${i}" ${revealed?"disabled":""} onclick="G.tAnswer(${i})">${esc(o)}</button>`;
+  }).join("");
+  let after="";
+  if(revealed){
+    const ok=S.tOpts[S.tSel]===correct;
+    after=`<div style="text-align:center"><span class="banner ${ok?"gain":"loss"}">${ok?`🎉 ¡Correcto! +${OTG_TRIVIA_PTS} y ${cat.emoji}`:`🙈 Era: ${esc(correct)}`}</span></div>
+    <div class="dato"><b>Dato curioso:</b> ${esc(t[5])}</div>
+    <button class="btn btn-grad" style="--ga:#7dd3b0;--gb:#4f8ee8" id="btn-next" onclick="G.tNext()">Siguiente →</button>`;
+  }
+  app.innerHTML=`${topbar()}<div class="screen" style="justify-content:flex-start;padding-top:8px;gap:16px">
+    <div class="card" style="--ga:${cat.color};--gb:${cat.color}">
+      <div class="chips"><span class="lvlchip">🎡 Trivia</span><span class="catchip">${cat.emoji} ${esc(t[1])}</span></div>
+      <div class="q" style="min-height:0">${esc(t[2])}</div>
+    </div>
+    <div class="opts">${opts}</div>
+    ${after}
+  </div>`;
+}
+G.tAnswer=function(i){
+  if(S.sub!=="ask")return;
+  const e=otgEntry(), t=OTG_TRIVIA[e.id], p=S.players[S.turn];
+  S.tSel=i; const ok=S.tOpts[i]===t[3];
+  p.tr[1]++;
+  if(ok){p.tr[0]++;p.score+=OTG_TRIVIA_PTS;if(!p.crowns.includes(t[1]))p.crowns.push(t[1])}
+  otgMarkDone(t[0]); S.sub="reveal"; save(); renderTrivia();
+};
+G.tNext=function(){
+  const e=otgEntry(), t=OTG_TRIVIA[e.id], p=S.players[S.turn];
+  const ok=S.tOpts[S.tSel]===t[3];
+  S.last={d:ok?OTG_TRIVIA_PTS:0,name:p.name}; if(!ok)S.last=null;
+  advance(true);
+};
+
+/* ---------- Final ---------- */
+function crownRow(p){return `<div class="crowns">${OTG_CAT_ORDER.map(c=>`<span class="tcrown${p.crowns.includes(c)?" won":""}" title="${esc(c)}">${OTG_TRIVIA_CATS[c].emoji}</span>`).join("")}</div>`}
+function renderOtgEnd(auto){
+  const [a,b]=S.players;
+  let title,crown;
+  if(a.score===b.score){title="¡Empate!";crown="🤝"}
+  else{const w=a.score>b.score?a:b;title=`¡Gana ${esc(w.name)}!`;crown="👑"}
+  const cards=S.players.map((p,i)=>`<div class="statcard">
+      <div class="head"><span class="nm"><span class="dot" style="background:var(--p${i+1})"></span>${esc(p.name)}</span><span class="pts">${p.score} pts</span></div>
+      <div class="line">💬 Respondidas ${p.ans} · Pasadas ${p.sk} · 🔁 Repreguntas ${p.fu||0}</div>
+      <div class="line">🎡 Trivia: ${p.tr[0]} de ${p.tr[1]} correctas</div>
+      ${crownRow(p)}
+    </div>`).join("");
+  app.innerHTML=`<canvas class="confetti" id="cv"></canvas><div class="screen"><div class="end">
+    <div class="crown">${crown}</div>
+    <h2>${title}</h2>
+    <p class="sub">${auto?`¡Completaron las ${sessLen()} cartas de On the go! `:`${S.qIdx} de ${sessLen()} cartas jugadas. `}</p>
+    ${cards}
+    <button class="btn btn-grad" style="--ga:#7dd3b0;--gb:#4f8ee8" id="btn-new" onclick="G.fresh()">Nueva partida 🔄</button>
+  </div></div>`;
+  confetti();
 }
 
 async function initInvite(){
